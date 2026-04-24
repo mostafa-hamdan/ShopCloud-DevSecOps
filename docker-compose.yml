@@ -1,0 +1,165 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: shopcloud
+      POSTGRES_USER: shopcloud
+      POSTGRES_PASSWORD: shopcloud_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shopcloud -d shopcloud"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  catalog:
+    build:
+      context: .
+      dockerfile: services/catalog/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://shopcloud:shopcloud_dev_password@postgres:5432/shopcloud
+      CORS_ORIGINS: http://localhost:3000
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  cart:
+    build:
+      context: .
+      dockerfile: services/cart/Dockerfile
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      CORS_ORIGINS: http://localhost:3000
+      CUSTOMER_DEMO_TOKEN: customer-demo-token
+      ADMIN_DEMO_TOKEN: admin-demo-token
+    ports:
+      - "8002:8002"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  checkout:
+    build:
+      context: .
+      dockerfile: services/checkout/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://shopcloud:shopcloud_dev_password@postgres:5432/shopcloud
+      REDIS_URL: redis://redis:6379/0
+      EVENTS_PATH: /app/runtime/events
+      CORS_ORIGINS: http://localhost:3000
+      CUSTOMER_DEMO_TOKEN: customer-demo-token
+      ADMIN_DEMO_TOKEN: admin-demo-token
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./runtime:/app/runtime
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  auth:
+    build:
+      context: .
+      dockerfile: services/auth/Dockerfile
+    environment:
+      CUSTOMER_DEMO_TOKEN: customer-demo-token
+      ADMIN_DEMO_TOKEN: admin-demo-token
+      CORS_ORIGINS: http://localhost:3000
+    ports:
+      - "8004:8004"
+
+  admin:
+    build:
+      context: .
+      dockerfile: services/admin/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://shopcloud:shopcloud_dev_password@postgres:5432/shopcloud
+      CORS_ORIGINS: http://localhost:3000
+      CUSTOMER_DEMO_TOKEN: customer-demo-token
+      ADMIN_DEMO_TOKEN: admin-demo-token
+    ports:
+      - "8005:8005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  invoice-worker:
+    build:
+      context: .
+      dockerfile: lambda/invoice_generator/Dockerfile
+    environment:
+      EVENTS_PATH: /app/runtime/events
+      INVOICE_STORAGE_PATH: /app/runtime/invoices
+      INVOICE_OUTBOX_PATH: /app/runtime/outbox
+    volumes:
+      - ./runtime:/app/runtime
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    environment:
+      VITE_CATALOG_API_URL: http://localhost:8001
+      VITE_CART_API_URL: http://localhost:8002
+      VITE_CHECKOUT_API_URL: http://localhost:8003
+      VITE_AUTH_API_URL: http://localhost:8004
+      VITE_ADMIN_API_URL: http://localhost:8005
+      VITE_APP_NAME: ShopCloud
+    ports:
+      - "3000:3000"
+    depends_on:
+      - catalog
+      - cart
+      - checkout
+      - auth
+      - admin
+
+  tests:
+    build:
+      context: .
+      dockerfile: tests/Dockerfile
+    profiles: ["test"]
+    environment:
+      CATALOG_API_URL: http://catalog:8001
+      CART_API_URL: http://cart:8002
+      CHECKOUT_API_URL: http://checkout:8003
+      AUTH_API_URL: http://auth:8004
+      ADMIN_API_URL: http://admin:8005
+      CUSTOMER_DEMO_TOKEN: customer-demo-token
+      ADMIN_DEMO_TOKEN: admin-demo-token
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      catalog:
+        condition: service_started
+      cart:
+        condition: service_started
+      checkout:
+        condition: service_started
+      auth:
+        condition: service_started
+      admin:
+        condition: service_started
+
+volumes:
+  postgres_data:

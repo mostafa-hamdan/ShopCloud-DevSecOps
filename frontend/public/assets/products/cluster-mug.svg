@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480" role="img" aria-label="Cluster mug">
+  <rect width="720" height="480" fill="#eef3f8"/>
+  <rect x="210" y="170" width="260" height="170" rx="32" fill="#ffffff"/>
+  <path d="M466 206h54c34 0 54 22 54 54s-20 54-54 54h-54" fill="none" stroke="#ffffff" stroke-width="30"/>
+  <path d="M250 148c-18-34 20-48 8-82M326 148c-18-34 20-48 8-82M402 148c-18-34 20-48 8-82" fill="none" stroke="#7d97ad" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="278" cy="246" r="24" fill="#2f5f8f"/>
+  <circle cx="344" cy="246" r="24" fill="#7bc6a4"/>
+  <circle cx="410" cy="246" r="24" fill="#f2c94c"/>
+  <rect x="190" y="340" width="350" height="24" rx="12" fill="#c8d6e3"/>
+</svg>

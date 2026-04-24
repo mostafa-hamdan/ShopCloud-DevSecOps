@@ -1,0 +1,1 @@
+Base manifests will hold shared Deployments, Services, and config contracts after the local MVP is stable.

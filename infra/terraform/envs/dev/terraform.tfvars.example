@@ -1,0 +1,15 @@
+# Turn on VPN before Terraform commands.
+
+aws_region          = "us-east-1"
+enable_networking   = false
+enable_ecr          = false
+enable_eks          = false
+enable_rds          = false
+enable_redis        = false
+enable_s3           = false
+enable_sqs          = false
+enable_lambda       = false
+enable_cognito      = false
+enable_monitoring   = false
+enable_edge         = false
+enable_client_vpn   = false

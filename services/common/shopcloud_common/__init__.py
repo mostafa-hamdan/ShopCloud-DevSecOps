@@ -1,0 +1,1 @@
+"""Shared ShopCloud helpers for local services."""

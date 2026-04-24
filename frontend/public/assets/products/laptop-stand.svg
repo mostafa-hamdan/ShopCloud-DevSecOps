@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480" role="img" aria-label="Laptop stand">
+  <rect width="720" height="480" fill="#f3f6fb"/>
+  <rect x="80" y="310" width="560" height="34" rx="17" fill="#d7e2ee"/>
+  <path d="M218 292h284l-58-116H276z" fill="#8ea4b9"/>
+  <path d="M292 194h136l34 68H258z" fill="#f9fbfd"/>
+  <path d="M300 262h120l-20 42h-80z" fill="#50677d"/>
+  <circle cx="570" cy="126" r="38" fill="#f2c94c"/>
+  <rect x="92" y="92" width="118" height="118" rx="18" fill="#7bc6a4"/>
+  <path d="M116 151h70" stroke="#ffffff" stroke-width="14" stroke-linecap="round"/>
+</svg>

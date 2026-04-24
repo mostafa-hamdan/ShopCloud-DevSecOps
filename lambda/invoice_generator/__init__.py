@@ -1,0 +1,1 @@
+"""Local-first invoice generator package."""

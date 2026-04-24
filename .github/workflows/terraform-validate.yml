@@ -1,0 +1,31 @@
+name: Terraform Validate
+
+on:
+  push:
+    paths:
+      - "infra/terraform/**"
+      - ".github/workflows/terraform-validate.yml"
+  pull_request:
+    paths:
+      - "infra/terraform/**"
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive infra/terraform
+      - name: Terraform init dev
+        working-directory: infra/terraform/envs/dev
+        run: terraform init -backend=false -input=false
+      - name: Terraform validate dev
+        working-directory: infra/terraform/envs/dev
+        run: terraform validate
+      - name: Terraform init prod
+        working-directory: infra/terraform/envs/prod
+        run: terraform init -backend=false -input=false
+      - name: Terraform validate prod
+        working-directory: infra/terraform/envs/prod
+        run: terraform validate

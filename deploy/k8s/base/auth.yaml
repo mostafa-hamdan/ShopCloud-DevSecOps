@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+  namespace: shopcloud
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+        - name: auth
+          image: REPLACE_ME/shopcloud/auth:dev
+          ports:
+            - containerPort: 8004
+          env:
+            - name: CORS_ORIGINS
+              valueFrom:
+                configMapKeyRef:
+                  name: shopcloud-config
+                  key: CORS_ORIGINS
+            - name: CUSTOMER_DEMO_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: shopcloud-secrets
+                  key: CUSTOMER_DEMO_TOKEN
+            - name: ADMIN_DEMO_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: shopcloud-secrets
+                  key: ADMIN_DEMO_TOKEN
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8004
+            initialDelaySeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8004
+            initialDelaySeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth
+  namespace: shopcloud
+spec:
+  selector:
+    app: auth
+  ports:
+    - port: 8004
+      targetPort: 8004

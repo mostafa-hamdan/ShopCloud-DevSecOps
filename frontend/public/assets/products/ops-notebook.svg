@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480" role="img" aria-label="Ops notebook">
+  <rect width="720" height="480" fill="#eff7f3"/>
+  <rect x="220" y="92" width="278" height="310" rx="22" fill="#134d45"/>
+  <rect x="248" y="122" width="222" height="250" rx="12" fill="#f9fbf6"/>
+  <path d="M284 174h150M284 220h150M284 266h118" stroke="#7c9088" stroke-width="13" stroke-linecap="round"/>
+  <path d="M218 128h-30M218 178h-30M218 228h-30M218 278h-30M218 328h-30" stroke="#f2c94c" stroke-width="13" stroke-linecap="round"/>
+  <circle cx="500" cy="120" r="44" fill="#f2c94c"/>
+</svg>

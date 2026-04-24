@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+
+jobs:
+  validate-compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Docker Compose
+        run: docker compose config
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build services for integration tests
+        run: docker compose build catalog cart checkout auth admin invoice-worker tests
+      - name: Start local stack
+        run: docker compose up -d postgres redis catalog cart checkout auth admin invoice-worker
+      - name: Run API integration tests
+        run: docker compose --profile test run --rm tests
+      - name: Tear down stack
+        if: always()
+        run: docker compose down -v
+
+  build-images:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dockerfile:
+          - frontend/Dockerfile
+          - services/catalog/Dockerfile
+          - services/cart/Dockerfile
+          - services/checkout/Dockerfile
+          - services/auth/Dockerfile
+          - services/admin/Dockerfile
+          - lambda/invoice_generator/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: false
