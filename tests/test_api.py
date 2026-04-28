@@ -75,7 +75,7 @@ def test_all_services_healthy():
 # Auth
 # ----------------------------------------------------------------------
 
-def test_duplicate_registration_rejected():
+def test_duplicate_registration_rejected(customer_token):
     """We registered CUSTOMER_EMAIL via the fixture; second attempt 409s."""
     r = requests.post(
         f"{AUTH}/auth/customer/register",
@@ -85,7 +85,7 @@ def test_duplicate_registration_rejected():
     assert r.status_code == 409
 
 
-def test_wrong_password_rejected():
+def test_wrong_password_rejected(customer_token):
     r = requests.post(
         f"{AUTH}/auth/customer/login",
         json={"email": CUSTOMER_EMAIL, "password": "definitely-wrong"},
