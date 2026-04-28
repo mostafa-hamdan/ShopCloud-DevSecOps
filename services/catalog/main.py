@@ -17,6 +17,7 @@ from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from sqlalchemy import func, or_
+from sqlalchemy.orm import lazyload
 
 from pyshared.auth import TokenClaims
 from pyshared.db import transactional
@@ -321,6 +322,7 @@ def decrement_stock(payload: StockChangeIn) -> dict:
         ids = [it["product_id"] for it in payload.items]
         rows = (
             s.query(db.Product)
+             .options(lazyload(db.Product.category))
              .filter(db.Product.id.in_(ids))
              .with_for_update()
              .all()
@@ -354,6 +356,7 @@ def restock(payload: StockChangeIn) -> dict:
         ids = [it["product_id"] for it in payload.items]
         rows = (
             s.query(db.Product)
+             .options(lazyload(db.Product.category))
              .filter(db.Product.id.in_(ids))
              .with_for_update()
              .all()
