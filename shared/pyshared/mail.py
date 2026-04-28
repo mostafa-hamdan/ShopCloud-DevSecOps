@@ -65,7 +65,7 @@ class LocalMailer(Mailer):
 
 def get_mailer() -> Mailer:
     backend = os.environ.get("MAIL_BACKEND", "local")
-    from_addr = os.environ.get("MAIL_FROM", "no-reply@shopcloud.local")
+    from_addr = os.environ.get("MAIL_FROM", "no-reply@shopcloud.example")
     if backend == "ses":
         return SESMailer(from_addr)
     return LocalMailer(os.environ.get(

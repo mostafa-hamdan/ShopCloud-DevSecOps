@@ -27,7 +27,9 @@ INTERNAL = {"X-Internal-Key": os.environ["INTERNAL_API_KEY"]}
 
 # Each test run gets a unique customer so the stack can be re-tested
 # without restarting (registrations would 409 on duplicate emails).
-SUFFIX = uuid.uuid4().hex[:8]
+# We combine timestamp + full UUID to make collision essentially impossible
+# even if the stack runs back-to-back tests on the same database.
+SUFFIX = f"{int(time.time() * 1000)}-{uuid.uuid4().hex}"
 CUSTOMER_EMAIL = f"customer-{SUFFIX}@example.com"
 CUSTOMER_PASSWORD = "test-password-1234"
 
@@ -48,7 +50,7 @@ def customer_token() -> str:
 def admin_token() -> str:
     r = requests.post(
         f"{AUTH}/auth/admin/login",
-        json={"email": "admin@shopcloud.local", "password": "admin12345"},
+        json={"email": "admin@shopcloud.example", "password": "admin12345"},
         timeout=10,
     )
     assert r.status_code == 200, r.text

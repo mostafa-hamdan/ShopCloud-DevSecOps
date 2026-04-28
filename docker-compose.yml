@@ -121,7 +121,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-please-32bytes-minimum}
       JWT_VERIFIER: local
       INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-internal-key}
-      BOOTSTRAP_ADMIN_EMAIL: admin@shopcloud.local
+      BOOTSTRAP_ADMIN_EMAIL: admin@shopcloud.example
       BOOTSTRAP_ADMIN_PASSWORD: admin12345
       CORS_ORIGINS: "http://localhost:3000,http://localhost:3001"
     ports:
@@ -163,7 +163,7 @@ services:
       LOCAL_MAIL_DIR: /shared/outbox
       STORAGE_BACKEND: local
       LOCAL_INVOICE_DIR: /shared/invoices
-      MAIL_FROM: no-reply@shopcloud.local
+      MAIL_FROM: no-reply@shopcloud.example
     volumes:
       - shared_data:/shared
     depends_on:

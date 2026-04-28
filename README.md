@@ -125,7 +125,7 @@ Service URLs:
 | Customer web     | http://localhost:3000        |
 | Admin web        | http://localhost:3001        |
 
-Bootstrap admin login: `admin@shopcloud.local` / `admin12345`.
+Bootstrap admin login: `admin@shopcloud.example` / `admin12345`.
 
 ## Tests
 

@@ -44,7 +44,7 @@ spec:
             # Bootstrap admin: created on first boot if no admins exist.
             # In prod, set these via Cognito directly and remove these envs.
             - name: BOOTSTRAP_ADMIN_EMAIL
-              value: "admin@shopcloud.local"
+              value: "admin@shopcloud.example"
             - name: BOOTSTRAP_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
