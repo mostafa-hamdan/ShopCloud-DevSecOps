@@ -1,3 +1,9 @@
+# Internal-only admin ALB ingress.
+#
+# Reachable only by Client VPN users (see infra/terraform/modules/client-vpn/).
+# No public DNS record points here. The internal ALB is provisioned by
+# the AWS Load Balancer Controller from this annotation:
+#   scheme: internal
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -7,23 +13,25 @@ metadata:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internal
     alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/healthcheck-path: /healthz
-    alb.ingress.kubernetes.io/group.name: internal-shopcloud
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/group.name: internal-admin
 spec:
   rules:
     - host: admin.shopcloud.internal
       http:
         paths:
-          - path: /admin
+          - path: /
             pathType: Prefix
             backend:
               service:
-                name: frontend
+                name: admin-web
                 port:
                   number: 80
     - host: admin-api.shopcloud.internal
       http:
         paths:
+          # The admin API service proxies to catalog/checkout/auth via
+          # the internal channel; only the /admin namespace is exposed.
           - path: /admin
             pathType: Prefix
             backend:
@@ -31,7 +39,8 @@ spec:
                 name: admin
                 port:
                   number: 8005
-          - path: /demo/login/admin
+          # Admin login still goes to auth.
+          - path: /auth/admin
             pathType: Prefix
             backend:
               service:

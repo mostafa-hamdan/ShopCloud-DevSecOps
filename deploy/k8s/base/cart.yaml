@@ -1,8 +1,12 @@
+# Cart: Redis-backed shopping cart and wishlist. Stateless app pods;
+# Redis (ElastiCache) holds session state.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cart
   namespace: shopcloud
+  labels:
+    app: cart
 spec:
   replicas: 2
   selector:
@@ -18,37 +22,37 @@ spec:
           image: REPLACE_ME/shopcloud/cart:dev
           ports:
             - containerPort: 8002
+          envFrom:
+            - configMapRef:
+                name: shopcloud-config
           env:
-            - name: CORS_ORIGINS
-              valueFrom:
-                configMapKeyRef:
-                  name: shopcloud-config
-                  key: CORS_ORIGINS
             - name: REDIS_URL
               valueFrom:
                 secretKeyRef:
                   name: shopcloud-secrets
                   key: REDIS_URL
-            - name: CUSTOMER_DEMO_TOKEN
+            - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: shopcloud-secrets
-                  key: CUSTOMER_DEMO_TOKEN
-            - name: ADMIN_DEMO_TOKEN
+                  key: JWT_SECRET
+            - name: INTERNAL_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: shopcloud-secrets
-                  key: ADMIN_DEMO_TOKEN
+                  key: INTERNAL_API_KEY
           readinessProbe:
             httpGet:
-              path: /readyz
+              path: /health
               port: 8002
-            initialDelaySeconds: 10
+            initialDelaySeconds: 5
+            periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /healthz
+              path: /health
               port: 8002
-            initialDelaySeconds: 20
+            initialDelaySeconds: 15
+            periodSeconds: 20
           resources:
             requests:
               cpu: 100m
@@ -56,6 +60,13 @@ spec:
             limits:
               cpu: 400m
               memory: 256Mi
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: cart
 ---
 apiVersion: v1
 kind: Service

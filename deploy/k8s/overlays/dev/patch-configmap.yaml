@@ -5,9 +5,10 @@ metadata:
   namespace: shopcloud
 data:
   APP_ENV: dev
-  CORS_ORIGINS: https://dev.shopcloud.example.com
-  VITE_CATALOG_API_URL: https://api.dev.shopcloud.example.com
-  VITE_CART_API_URL: https://api.dev.shopcloud.example.com
-  VITE_CHECKOUT_API_URL: https://api.dev.shopcloud.example.com
-  VITE_AUTH_API_URL: https://api.dev.shopcloud.example.com
-  VITE_ADMIN_API_URL: https://admin-api.dev.shopcloud.internal
+  CORS_ORIGINS: https://dev.shopcloud.example.com,https://admin.dev.shopcloud.example.com
+  ADMIN_CORS_ORIGINS: https://admin.dev.shopcloud.example.com
+  NEXT_PUBLIC_CATALOG_URL: https://api.dev.shopcloud.example.com
+  NEXT_PUBLIC_CART_URL: https://api.dev.shopcloud.example.com
+  NEXT_PUBLIC_CHECKOUT_URL: https://api.dev.shopcloud.example.com
+  NEXT_PUBLIC_AUTH_URL: https://api.dev.shopcloud.example.com
+  NEXT_PUBLIC_ADMIN_URL: https://admin-api.dev.shopcloud.internal

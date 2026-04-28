@@ -1,8 +1,12 @@
+# Auth: customer + admin pools, profiles, addresses, session issuance.
+# Owns customers, admins, addresses tables.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: auth
   namespace: shopcloud
+  labels:
+    app: auth
 spec:
   replicas: 2
   selector:
@@ -18,39 +22,61 @@ spec:
           image: REPLACE_ME/shopcloud/auth:dev
           ports:
             - containerPort: 8004
+          envFrom:
+            - configMapRef:
+                name: shopcloud-config
           env:
-            - name: CORS_ORIGINS
-              valueFrom:
-                configMapKeyRef:
-                  name: shopcloud-config
-                  key: CORS_ORIGINS
-            - name: CUSTOMER_DEMO_TOKEN
+            - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
                   name: shopcloud-secrets
-                  key: CUSTOMER_DEMO_TOKEN
-            - name: ADMIN_DEMO_TOKEN
+                  key: DATABASE_URL
+            - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: shopcloud-secrets
-                  key: ADMIN_DEMO_TOKEN
+                  key: JWT_SECRET
+            - name: INTERNAL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: shopcloud-secrets
+                  key: INTERNAL_API_KEY
+            # Bootstrap admin: created on first boot if no admins exist.
+            # In prod, set these via Cognito directly and remove these envs.
+            - name: BOOTSTRAP_ADMIN_EMAIL
+              value: "admin@shopcloud.local"
+            - name: BOOTSTRAP_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: shopcloud-secrets
+                  key: BOOTSTRAP_ADMIN_PASSWORD
+                  optional: true
           readinessProbe:
             httpGet:
-              path: /readyz
+              path: /health
               port: 8004
-            initialDelaySeconds: 10
+            initialDelaySeconds: 5
+            periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /healthz
+              path: /health
               port: 8004
-            initialDelaySeconds: 20
+            initialDelaySeconds: 15
+            periodSeconds: 20
           resources:
             requests:
               cpu: 100m
               memory: 128Mi
             limits:
-              cpu: 300m
+              cpu: 400m
               memory: 256Mi
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: auth
 ---
 apiVersion: v1
 kind: Service

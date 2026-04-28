@@ -1,3 +1,8 @@
+# Public-facing ALB ingress.
+#
+# Customer storefront sits at the apex (shopcloud.example.com); the
+# JSON API is served from api.shopcloud.example.com. The admin panel
+# is NOT routed here — see internal-admin-ingress.yaml.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -7,8 +12,12 @@ metadata:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/healthcheck-path: /healthz
+    alb.ingress.kubernetes.io/healthcheck-path: /health
     alb.ingress.kubernetes.io/group.name: public-shopcloud
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    # Provided by the certificate manager once an ACM cert is issued.
+    # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:...
 spec:
   rules:
     - host: shopcloud.example.com
@@ -18,13 +27,13 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: frontend
+                name: customer-web
                 port:
                   number: 80
     - host: api.shopcloud.example.com
       http:
         paths:
-          - path: /products
+          - path: /catalog
             pathType: Prefix
             backend:
               service:
@@ -38,6 +47,13 @@ spec:
                 name: cart
                 port:
                   number: 8002
+          - path: /wishlist
+            pathType: Prefix
+            backend:
+              service:
+                name: cart
+                port:
+                  number: 8002
           - path: /checkout
             pathType: Prefix
             backend:
@@ -45,14 +61,7 @@ spec:
                 name: checkout
                 port:
                   number: 8003
-          - path: /demo/login/customer
-            pathType: Prefix
-            backend:
-              service:
-                name: auth
-                port:
-                  number: 8004
-          - path: /validate
+          - path: /auth
             pathType: Prefix
             backend:
               service:
