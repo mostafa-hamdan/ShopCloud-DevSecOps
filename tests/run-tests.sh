@@ -1,4 +1,6 @@
 #!/bin/sh
+# Wait for every service to be healthy, then run the live integration
+# tests. Used by docker compose --profile test.
 set -eu
 
 python - <<'PY'
@@ -15,16 +17,19 @@ targets = [
 ]
 
 for target in targets:
-    for _ in range(40):
+    for attempt in range(40):
         try:
             response = requests.get(target, timeout=2)
             if response.ok:
+                print(f"OK {target}")
                 break
-        except Exception:
+        except Exception as e:
             pass
         time.sleep(2)
     else:
         raise SystemExit(f"Timed out waiting for {target}")
+
+print("all services up; starting pytest")
 PY
 
 pytest -q /app/tests/test_api.py

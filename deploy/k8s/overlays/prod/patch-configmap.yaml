@@ -5,9 +5,18 @@ metadata:
   namespace: shopcloud
 data:
   APP_ENV: prod
-  CORS_ORIGINS: https://shopcloud.example.com
-  VITE_CATALOG_API_URL: https://api.shopcloud.example.com
-  VITE_CART_API_URL: https://api.shopcloud.example.com
-  VITE_CHECKOUT_API_URL: https://api.shopcloud.example.com
-  VITE_AUTH_API_URL: https://api.shopcloud.example.com
-  VITE_ADMIN_API_URL: https://admin-api.shopcloud.internal
+  CORS_ORIGINS: https://shopcloud.example.com,https://admin.shopcloud.example.com
+  ADMIN_CORS_ORIGINS: https://admin.shopcloud.example.com
+
+  # Real AWS-backed services in prod.
+  JWT_VERIFIER: cognito
+  QUEUE_BACKEND: sqs
+  STORAGE_BACKEND: s3
+  MAIL_BACKEND: ses
+  TRUST_FORWARDED_FOR: "1"
+
+  NEXT_PUBLIC_CATALOG_URL: https://api.shopcloud.example.com
+  NEXT_PUBLIC_CART_URL: https://api.shopcloud.example.com
+  NEXT_PUBLIC_CHECKOUT_URL: https://api.shopcloud.example.com
+  NEXT_PUBLIC_AUTH_URL: https://api.shopcloud.example.com
+  NEXT_PUBLIC_ADMIN_URL: https://admin-api.shopcloud.internal

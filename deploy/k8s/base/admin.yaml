@@ -1,8 +1,12 @@
+# Admin: stateless orchestration over auth, catalog, checkout. Sits
+# behind the internal ALB; never reachable from the public internet.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: admin
   namespace: shopcloud
+  labels:
+    app: admin
 spec:
   replicas: 2
   selector:
@@ -18,32 +22,32 @@ spec:
           image: REPLACE_ME/shopcloud/admin:dev
           ports:
             - containerPort: 8005
+          envFrom:
+            - configMapRef:
+                name: shopcloud-config
           env:
-            - name: CORS_ORIGINS
-              valueFrom:
-                configMapKeyRef:
-                  name: shopcloud-config
-                  key: CORS_ORIGINS
-            - name: DATABASE_URL
+            - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: shopcloud-secrets
-                  key: DATABASE_URL
-            - name: ADMIN_DEMO_TOKEN
+                  key: JWT_SECRET
+            - name: INTERNAL_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: shopcloud-secrets
-                  key: ADMIN_DEMO_TOKEN
+                  key: INTERNAL_API_KEY
           readinessProbe:
             httpGet:
-              path: /readyz
+              path: /health
               port: 8005
-            initialDelaySeconds: 10
+            initialDelaySeconds: 5
+            periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /healthz
+              path: /health
               port: 8005
-            initialDelaySeconds: 20
+            initialDelaySeconds: 15
+            periodSeconds: 20
           resources:
             requests:
               cpu: 100m

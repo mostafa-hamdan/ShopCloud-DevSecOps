@@ -1,20 +1,42 @@
+# Local development only.
+#
+# This is NOT the production deployment topology. Production runs on
+# AWS EKS — see infra/terraform/. This file exists so contributors can
+# run the whole stack with `docker compose up` while iterating on app
+# code, with all AWS-only services replaced by local equivalents:
+#
+#   * SQS    -> shared volume + file-based queue
+#   * SES    -> shared volume + file-based mailbox
+#   * RDS    -> postgres container (single shared DB; in prod logical
+#               separation is enforced by table ownership at app level,
+#               in production each service could be moved to its own DB)
+#   * Redis  -> redis container
+#   * Cognito-> auth service in HS256 mode (set JWT_VERIFIER=cognito to
+#               switch to real Cognito in cloud deploys)
+#
+# Service port mapping (matches Kubernetes manifests in deploy/k8s/):
+#   catalog  : 8001
+#   cart     : 8002
+#   checkout : 8003
+#   auth     : 8004
+#   admin    : 8005
+
 services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: shopcloud
       POSTGRES_USER: shopcloud
       POSTGRES_PASSWORD: shopcloud_dev_password
+      POSTGRES_DB: shopcloud
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+      - pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U shopcloud -d shopcloud"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD", "pg_isready", "-U", "shopcloud", "-d", "shopcloud"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   redis:
     image: redis:7-alpine
@@ -22,17 +44,20 @@ services:
       - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   catalog:
     build:
       context: .
       dockerfile: services/catalog/Dockerfile
     environment:
-      DATABASE_URL: postgresql://shopcloud:shopcloud_dev_password@postgres:5432/shopcloud
-      CORS_ORIGINS: http://localhost:3000
+      DATABASE_URL: postgresql+psycopg://shopcloud:shopcloud_dev_password@postgres:5432/shopcloud
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-please-32bytes-minimum}
+      JWT_VERIFIER: local
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-internal-key}
+      CORS_ORIGINS: "http://localhost:3000,http://localhost:3001"
     ports:
       - "8001:8001"
     depends_on:
@@ -45,92 +70,127 @@ services:
       dockerfile: services/cart/Dockerfile
     environment:
       REDIS_URL: redis://redis:6379/0
-      CORS_ORIGINS: http://localhost:3000
-      CUSTOMER_DEMO_TOKEN: customer-demo-token
-      ADMIN_DEMO_TOKEN: admin-demo-token
+      CATALOG_BASE_URL: http://catalog:8001
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-internal-key}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-please-32bytes-minimum}
+      JWT_VERIFIER: local
+      CORS_ORIGINS: "http://localhost:3000"
     ports:
       - "8002:8002"
     depends_on:
       redis:
         condition: service_healthy
+      catalog:
+        condition: service_started
 
   checkout:
     build:
       context: .
       dockerfile: services/checkout/Dockerfile
     environment:
-      DATABASE_URL: postgresql://shopcloud:shopcloud_dev_password@postgres:5432/shopcloud
-      REDIS_URL: redis://redis:6379/0
-      EVENTS_PATH: /app/runtime/events
-      CORS_ORIGINS: http://localhost:3000
-      CUSTOMER_DEMO_TOKEN: customer-demo-token
-      ADMIN_DEMO_TOKEN: admin-demo-token
+      DATABASE_URL: postgresql+psycopg://shopcloud:shopcloud_dev_password@postgres:5432/shopcloud
+      CART_BASE_URL: http://cart:8002
+      CATALOG_BASE_URL: http://catalog:8001
+      AUTH_BASE_URL: http://auth:8004
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-internal-key}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-please-32bytes-minimum}
+      JWT_VERIFIER: local
+      QUEUE_BACKEND: local
+      LOCAL_QUEUE_PATH: /shared/queue/invoice.queue
+      CORS_ORIGINS: "http://localhost:3000"
+    volumes:
+      - shared_data:/shared
     ports:
       - "8003:8003"
-    volumes:
-      - ./runtime:/app/runtime
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
+      cart:
+        condition: service_started
+      catalog:
+        condition: service_started
+      auth:
+        condition: service_started
 
   auth:
     build:
       context: .
       dockerfile: services/auth/Dockerfile
     environment:
-      CUSTOMER_DEMO_TOKEN: customer-demo-token
-      ADMIN_DEMO_TOKEN: admin-demo-token
-      CORS_ORIGINS: http://localhost:3000
+      DATABASE_URL: postgresql+psycopg://shopcloud:shopcloud_dev_password@postgres:5432/shopcloud
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-please-32bytes-minimum}
+      JWT_VERIFIER: local
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-internal-key}
+      BOOTSTRAP_ADMIN_EMAIL: admin@shopcloud.example
+      BOOTSTRAP_ADMIN_PASSWORD: admin12345
+      CORS_ORIGINS: "http://localhost:3000,http://localhost:3001"
     ports:
       - "8004:8004"
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   admin:
     build:
       context: .
       dockerfile: services/admin/Dockerfile
     environment:
-      DATABASE_URL: postgresql://shopcloud:shopcloud_dev_password@postgres:5432/shopcloud
-      CORS_ORIGINS: http://localhost:3000
-      CUSTOMER_DEMO_TOKEN: customer-demo-token
-      ADMIN_DEMO_TOKEN: admin-demo-token
+      CATALOG_BASE_URL: http://catalog:8001
+      CHECKOUT_BASE_URL: http://checkout:8003
+      AUTH_BASE_URL: http://auth:8004
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-internal-key}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-please-32bytes-minimum}
+      JWT_VERIFIER: local
+      ADMIN_CORS_ORIGINS: "http://localhost:3001"
     ports:
       - "8005:8005"
     depends_on:
-      postgres:
-        condition: service_healthy
+      catalog:
+        condition: service_started
+      checkout:
+        condition: service_started
+      auth:
+        condition: service_started
 
   invoice-worker:
     build:
       context: .
-      dockerfile: lambda/invoice_generator/Dockerfile
+      dockerfile: services/invoice-worker/Dockerfile
     environment:
-      EVENTS_PATH: /app/runtime/events
-      INVOICE_STORAGE_PATH: /app/runtime/invoices
-      INVOICE_OUTBOX_PATH: /app/runtime/outbox
+      QUEUE_BACKEND: local
+      LOCAL_QUEUE_PATH: /shared/queue/invoice.queue
+      MAIL_BACKEND: local
+      LOCAL_MAIL_DIR: /shared/outbox
+      STORAGE_BACKEND: local
+      LOCAL_INVOICE_DIR: /shared/invoices
+      MAIL_FROM: no-reply@shopcloud.example
     volumes:
-      - ./runtime:/app/runtime
+      - shared_data:/shared
+    depends_on:
+      checkout:
+        condition: service_started
 
-  frontend:
+  customer-web:
     build:
       context: .
-      dockerfile: frontend/Dockerfile
+      dockerfile: frontend/customer/Dockerfile
     environment:
-      VITE_CATALOG_API_URL: http://localhost:8001
-      VITE_CART_API_URL: http://localhost:8002
-      VITE_CHECKOUT_API_URL: http://localhost:8003
-      VITE_AUTH_API_URL: http://localhost:8004
-      VITE_ADMIN_API_URL: http://localhost:8005
-      VITE_APP_NAME: ShopCloud
+      NEXT_PUBLIC_AUTH_URL: http://localhost:8004
+      NEXT_PUBLIC_CATALOG_URL: http://localhost:8001
+      NEXT_PUBLIC_CART_URL: http://localhost:8002
+      NEXT_PUBLIC_CHECKOUT_URL: http://localhost:8003
     ports:
       - "3000:3000"
-    depends_on:
-      - catalog
-      - cart
-      - checkout
-      - auth
-      - admin
+
+  admin-web:
+    build:
+      context: .
+      dockerfile: frontend/admin/Dockerfile
+    environment:
+      NEXT_PUBLIC_AUTH_URL: http://localhost:8004
+      NEXT_PUBLIC_ADMIN_URL: http://localhost:8005
+    ports:
+      - "3001:3001"
 
   tests:
     build:
@@ -143,13 +203,9 @@ services:
       CHECKOUT_API_URL: http://checkout:8003
       AUTH_API_URL: http://auth:8004
       ADMIN_API_URL: http://admin:8005
-      CUSTOMER_DEMO_TOKEN: customer-demo-token
-      ADMIN_DEMO_TOKEN: admin-demo-token
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-please-32bytes-minimum}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-internal-key}
     depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
       catalog:
         condition: service_started
       cart:
@@ -162,4 +218,5 @@ services:
         condition: service_started
 
 volumes:
-  postgres_data:
+  pg_data:
+  shared_data:

@@ -4,11 +4,33 @@ metadata:
   name: shopcloud-config
   namespace: shopcloud
 data:
+  # Application environment
   APP_ENV: dev
-  CORS_ORIGINS: https://shopcloud.example.com
-  VITE_APP_NAME: ShopCloud
-  VITE_CATALOG_API_URL: https://api.shopcloud.example.com
-  VITE_CART_API_URL: https://api.shopcloud.example.com
-  VITE_CHECKOUT_API_URL: https://api.shopcloud.example.com
-  VITE_AUTH_API_URL: https://api.shopcloud.example.com
-  VITE_ADMIN_API_URL: https://admin-api.shopcloud.internal
+
+  # CORS — overridden per-overlay (see overlays/dev, overlays/prod)
+  CORS_ORIGINS: https://shopcloud.example.com,https://admin.shopcloud.example.com
+  ADMIN_CORS_ORIGINS: https://admin.shopcloud.example.com
+
+  # Internal service-to-service URLs (cluster DNS)
+  CATALOG_BASE_URL: http://catalog:8001
+  CART_BASE_URL: http://cart:8002
+  CHECKOUT_BASE_URL: http://checkout:8003
+  AUTH_BASE_URL: http://auth:8004
+
+  # JWT verifier mode: "local" (HS256, dev) or "cognito" (RS256, prod via JWKS)
+  JWT_VERIFIER: local
+
+  # Queue + storage backends — switch to sqs / s3 / ses in prod overlay
+  QUEUE_BACKEND: local
+  STORAGE_BACKEND: local
+  MAIL_BACKEND: local
+
+  # Trust X-Forwarded-For header (set to "1" once running behind ALB)
+  TRUST_FORWARDED_FOR: "1"
+
+  # Frontend bundles read these at build time
+  NEXT_PUBLIC_CATALOG_URL: https://api.shopcloud.example.com
+  NEXT_PUBLIC_CART_URL: https://api.shopcloud.example.com
+  NEXT_PUBLIC_CHECKOUT_URL: https://api.shopcloud.example.com
+  NEXT_PUBLIC_AUTH_URL: https://api.shopcloud.example.com
+  NEXT_PUBLIC_ADMIN_URL: https://admin-api.shopcloud.internal
