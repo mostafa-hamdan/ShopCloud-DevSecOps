@@ -1,5 +1,7 @@
 name: Docker Build And Push
 
+# Push images to ECR. Triggered manually for now (workflow_dispatch);
+# once stable, enable the push on dev branch by removing the if guard.
 on:
   workflow_dispatch:
   push:
@@ -8,12 +10,40 @@ on:
       - "frontend/**"
       - "services/**"
       - "lambda/**"
+      - "shared/**"
       - ".github/workflows/docker-build.yml"
 
 jobs:
   build-and-push:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: customer-web
+            dockerfile: frontend/customer/Dockerfile
+            repo: shopcloud/dev/customer-web
+          - name: admin-web
+            dockerfile: frontend/admin/Dockerfile
+            repo: shopcloud/dev/admin-web
+          - name: catalog
+            dockerfile: services/catalog/Dockerfile
+            repo: shopcloud/dev/catalog
+          - name: cart
+            dockerfile: services/cart/Dockerfile
+            repo: shopcloud/dev/cart
+          - name: checkout
+            dockerfile: services/checkout/Dockerfile
+            repo: shopcloud/dev/checkout
+          - name: auth
+            dockerfile: services/auth/Dockerfile
+            repo: shopcloud/dev/auth
+          - name: admin
+            dockerfile: services/admin/Dockerfile
+            repo: shopcloud/dev/admin
+          - name: invoice-worker
+            dockerfile: services/invoice-worker/Dockerfile
+            repo: shopcloud/dev/invoice-worker
     steps:
       - uses: actions/checkout@v4
       - uses: aws-actions/configure-aws-credentials@v4
@@ -23,10 +53,12 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
       - uses: aws-actions/amazon-ecr-login@v2
       - uses: docker/setup-buildx-action@v3
-      - name: Build and push frontend image
+      - name: Build and push ${{ matrix.name }}
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: frontend/Dockerfile
+          file: ${{ matrix.dockerfile }}
           push: true
-          tags: ${{ secrets.ECR_REGISTRY }}/shopcloud/frontend:${{ github.sha }}
+          tags: |
+            ${{ secrets.ECR_REGISTRY }}/${{ matrix.repo }}:${{ github.sha }}
+            ${{ secrets.ECR_REGISTRY }}/${{ matrix.repo }}:dev-latest

@@ -6,6 +6,28 @@ on:
   pull_request:
 
 jobs:
+  # In-process pytest suite — fast, isolated, runs against in-memory
+  # sqlite + fakeredis + respx mocks.
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install shared library + dev deps
+        run: |
+          pip install -e shared/
+          pip install -r requirements-dev.txt
+      - name: Install service deps
+        run: |
+          for s in auth catalog cart checkout admin; do
+            pip install -r services/$s/requirements.txt
+          done
+      - name: Run pytest
+        run: pytest -q
+
+  # Validate compose syntax — cheap sanity check.
   validate-compose:
     runs-on: ubuntu-latest
     steps:
@@ -13,32 +35,41 @@ jobs:
       - name: Validate Docker Compose
         run: docker compose config
 
+  # Live integration tests — bring the stack up in compose, hit it
+  # over HTTP with real registration/login flows.
   integration-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build services for integration tests
-        run: docker compose build catalog cart checkout auth admin invoice-worker tests
-      - name: Start local stack
-        run: docker compose up -d postgres redis catalog cart checkout auth admin invoice-worker
-      - name: Run API integration tests
+      - name: Build images
+        run: |
+          docker compose build catalog cart checkout auth admin invoice-worker tests
+      - name: Start stack
+        run: |
+          docker compose up -d postgres redis catalog cart checkout auth admin invoice-worker
+      - name: Run integration tests
         run: docker compose --profile test run --rm tests
-      - name: Tear down stack
+      - name: Show service logs on failure
+        if: failure()
+        run: docker compose logs --tail 200
+      - name: Tear down
         if: always()
         run: docker compose down -v
 
+  # Build all images to catch Dockerfile breakage early. Doesn't push.
   build-images:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         dockerfile:
-          - frontend/Dockerfile
+          - frontend/customer/Dockerfile
+          - frontend/admin/Dockerfile
           - services/catalog/Dockerfile
           - services/cart/Dockerfile
           - services/checkout/Dockerfile
           - services/auth/Dockerfile
           - services/admin/Dockerfile
-          - lambda/invoice_generator/Dockerfile
+          - services/invoice-worker/Dockerfile
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
