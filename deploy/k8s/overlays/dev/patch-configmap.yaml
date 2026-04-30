@@ -5,10 +5,13 @@ metadata:
   namespace: shopcloud
 data:
   APP_ENV: dev
-  CORS_ORIGINS: https://dev.shopcloud.example.com,https://admin.dev.shopcloud.example.com
-  ADMIN_CORS_ORIGINS: https://admin.dev.shopcloud.example.com
-  NEXT_PUBLIC_CATALOG_URL: https://api.dev.shopcloud.example.com
-  NEXT_PUBLIC_CART_URL: https://api.dev.shopcloud.example.com
-  NEXT_PUBLIC_CHECKOUT_URL: https://api.dev.shopcloud.example.com
-  NEXT_PUBLIC_AUTH_URL: https://api.dev.shopcloud.example.com
-  NEXT_PUBLIC_ADMIN_URL: https://admin-api.dev.shopcloud.internal
+  CORS_ORIGINS: "*"
+  ADMIN_CORS_ORIGINS: "*"
+  QUEUE_BACKEND: local
+  STORAGE_BACKEND: local
+  MAIL_BACKEND: local
+  NEXT_PUBLIC_CATALOG_URL: ""
+  NEXT_PUBLIC_CART_URL: ""
+  NEXT_PUBLIC_CHECKOUT_URL: ""
+  NEXT_PUBLIC_AUTH_URL: ""
+  NEXT_PUBLIC_ADMIN_URL: ""

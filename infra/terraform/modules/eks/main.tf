@@ -7,7 +7,7 @@ module "eks" {
   cluster_version = "1.29"
 
   vpc_id                   = var.vpc_id
-  subnet_ids               = var.private_subnet_ids
+  subnet_ids               = var.node_subnet_ids
   control_plane_subnet_ids = var.public_subnet_ids
 
   cluster_endpoint_public_access = true
@@ -27,7 +27,6 @@ module "eks" {
     coredns                = {}
     kube-proxy             = {}
     vpc-cni                = {}
-    aws-ebs-csi-driver     = {}
   }
 
   tags = var.tags

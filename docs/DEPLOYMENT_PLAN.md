@@ -26,10 +26,12 @@ No AWS provisioning should happen without explicit approval for the current stag
 ## Stage 2: ECR and image push
 - Create:
   - ECR repos for frontend, catalog, cart, checkout, auth, admin, invoice-generator
+  - `frontend` currently stores the customer-web image for the first public demo
   - image tags based on Git commit SHA
   - optional GitHub Actions push workflow
 - Cost risk: low
 - Defer:
+  - admin-web image/repository until Stage 6 private admin path
   - invoice-generator ECR can be deferred if Lambda zip packaging is used first
   - GitHub automated push can be deferred in favor of manual first push
 - Approval checkpoint: approve ECR repo names and manual vs GitHub Actions push
@@ -41,11 +43,13 @@ No AWS provisioning should happen without explicit approval for the current stag
   - IAM OIDC provider and IRSA baseline
   - AWS Load Balancer Controller
   - public ALB ingress for customer path
+  - temporary in-cluster PostgreSQL and Redis only for this stage
 - Cost risk: high
 - Defer:
   - NAT Gateway if not immediately required
   - extra node groups
   - production environment
+  - RDS, ElastiCache, internal admin ALB, Client VPN, CloudFront, WAF, and Route 53
 - Approval checkpoint: approve estimated EKS, node, ALB, and networking cost before any Terraform apply
 
 ## Stage 4: RDS and Redis integration

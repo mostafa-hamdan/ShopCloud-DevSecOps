@@ -9,6 +9,7 @@ resources:
   # secret-example.yaml is committed as a template only.
   # In real deploys the secret is created out-of-band (External Secrets
   # Operator pulling from AWS Secrets Manager) so we don't list it here.
+  - serviceaccounts.yaml
   - catalog.yaml
   - cart.yaml
   - checkout.yaml

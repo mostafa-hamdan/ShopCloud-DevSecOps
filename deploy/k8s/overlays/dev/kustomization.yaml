@@ -2,5 +2,49 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base
+  - stage3-secret.yaml
+  - temporary-postgres-redis.yaml
 patches:
   - path: patch-configmap.yaml
+  - target:
+      group: networking.k8s.io
+      version: v1
+      kind: Ingress
+      name: public-shopcloud
+    path: patch-public-ingress.yaml
+  - target:
+      group: networking.k8s.io
+      version: v1
+      kind: Ingress
+      name: internal-admin
+    path: delete-internal-admin-ingress.yaml
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: admin-web
+    path: delete-admin-web-deployment.yaml
+  - target:
+      version: v1
+      kind: Service
+      name: admin-web
+    path: delete-admin-web-service.yaml
+images:
+  - name: REPLACE_ME/shopcloud/customer-web
+    newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/frontend
+    newTag: dev-latest
+  - name: REPLACE_ME/shopcloud/catalog
+    newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/catalog
+    newTag: dev-latest
+  - name: REPLACE_ME/shopcloud/cart
+    newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/cart
+    newTag: dev-latest
+  - name: REPLACE_ME/shopcloud/checkout
+    newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/checkout
+    newTag: dev-latest
+  - name: REPLACE_ME/shopcloud/auth
+    newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/auth
+    newTag: dev-latest
+  - name: REPLACE_ME/shopcloud/admin
+    newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/admin
+    newTag: dev-latest

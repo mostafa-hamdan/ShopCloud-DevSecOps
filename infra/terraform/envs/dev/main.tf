@@ -22,6 +22,8 @@ module "ecr" {
   source       = "../../modules/ecr"
   enabled      = var.enable_ecr
   name_prefix  = "${var.project_name}/${var.environment}"
+  # Stage 3 reuses the already-created frontend repo for the customer-web image.
+  # Admin web and invoice worker repos are deferred until Stage 5/6 approval.
   repositories = ["frontend", "catalog", "cart", "checkout", "auth", "admin", "invoice-generator"]
   tags         = local.tags
 }
@@ -33,10 +35,13 @@ module "eks" {
   vpc_id             = module.networking.vpc_id
   private_subnet_ids = module.networking.private_subnet_ids
   public_subnet_ids  = module.networking.public_subnet_ids
-  node_instance_type = "t3.small" # Keep cost-aware.
-  desired_size       = 2
-  min_size           = 2
-  max_size           = 3
+  # Stage 3 deliberately uses public subnets for nodes to avoid NAT Gateway cost.
+  # Replace with private subnets + NAT or VPC endpoints in later hardened stages.
+  node_subnet_ids    = module.networking.public_subnet_ids
+  node_instance_type = var.node_instance_type
+  desired_size       = var.node_desired_size
+  min_size           = var.node_min_size
+  max_size           = var.node_max_size
   tags               = local.tags
 }
 

@@ -151,6 +151,10 @@ Before Stage 1, approve:
 - `shopcloud/dev/admin`
 - `shopcloud/dev/invoice-generator`
 
+Stage 3 note: after the Next.js frontend split, the public customer app is built from
+`frontend/customer/Dockerfile` and pushed to the existing `shopcloud/dev/frontend`
+repository. The admin web image is deferred until the private admin path stage.
+
 Commands to create repositories only after approval:
 
 ```powershell
@@ -192,7 +196,7 @@ $ECR = "$ACCOUNT_ID.dkr.ecr.$env:AWS_REGION.amazonaws.com"
 aws ecr get-login-password --region $env:AWS_REGION --profile $env:AWS_PROFILE | docker login --username AWS --password-stdin $ECR
 
 $SHA = git rev-parse --short HEAD
-docker build -f frontend/Dockerfile -t "$ECR/shopcloud/dev/frontend:$SHA" .
+docker build -f frontend/customer/Dockerfile -t "$ECR/shopcloud/dev/frontend:$SHA" .
 docker push "$ECR/shopcloud/dev/frontend:$SHA"
 ```
 
@@ -200,13 +204,13 @@ Repeat the build/push pattern for:
 
 ```powershell
 $images = @(
-  @{ Name = "frontend"; Dockerfile = "frontend/Dockerfile"; Repo = "shopcloud/dev/frontend" },
+  @{ Name = "customer-web"; Dockerfile = "frontend/customer/Dockerfile"; Repo = "shopcloud/dev/frontend" },
   @{ Name = "catalog"; Dockerfile = "services/catalog/Dockerfile"; Repo = "shopcloud/dev/catalog" },
   @{ Name = "cart"; Dockerfile = "services/cart/Dockerfile"; Repo = "shopcloud/dev/cart" },
   @{ Name = "checkout"; Dockerfile = "services/checkout/Dockerfile"; Repo = "shopcloud/dev/checkout" },
   @{ Name = "auth"; Dockerfile = "services/auth/Dockerfile"; Repo = "shopcloud/dev/auth" },
   @{ Name = "admin"; Dockerfile = "services/admin/Dockerfile"; Repo = "shopcloud/dev/admin" },
-  @{ Name = "invoice-generator"; Dockerfile = "lambda/invoice_generator/Dockerfile"; Repo = "shopcloud/dev/invoice-generator" }
+  @{ Name = "invoice-worker"; Dockerfile = "services/invoice-worker/Dockerfile"; Repo = "shopcloud/dev/invoice-generator" }
 )
 
 foreach ($image in $images) {

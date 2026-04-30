@@ -22,10 +22,9 @@ jobs:
         include:
           - name: customer-web
             dockerfile: frontend/customer/Dockerfile
-            repo: shopcloud/dev/customer-web
-          - name: admin-web
-            dockerfile: frontend/admin/Dockerfile
-            repo: shopcloud/dev/admin-web
+            # Stage 3 reuses the existing frontend ECR repo to avoid creating
+            # extra repositories before the first live demo is stable.
+            repo: shopcloud/dev/frontend
           - name: catalog
             dockerfile: services/catalog/Dockerfile
             repo: shopcloud/dev/catalog
@@ -43,7 +42,7 @@ jobs:
             repo: shopcloud/dev/admin
           - name: invoice-worker
             dockerfile: services/invoice-worker/Dockerfile
-            repo: shopcloud/dev/invoice-worker
+            repo: shopcloud/dev/invoice-generator
     steps:
       - uses: actions/checkout@v4
       - uses: aws-actions/configure-aws-credentials@v4

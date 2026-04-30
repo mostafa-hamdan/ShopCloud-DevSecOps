@@ -1,6 +1,7 @@
 # Turn on VPN before Terraform commands.
 
 aws_region          = "us-east-1"
+aws_profile         = "shopcloud-new"
 enable_networking   = false
 enable_ecr          = false
 enable_eks          = false
@@ -13,3 +14,8 @@ enable_cognito      = false
 enable_monitoring   = false
 enable_edge         = false
 enable_client_vpn   = false
+
+node_instance_type = "t3.small"
+node_desired_size  = 2
+node_min_size      = 2
+node_max_size      = 3

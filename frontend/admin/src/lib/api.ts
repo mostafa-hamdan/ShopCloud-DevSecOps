@@ -49,8 +49,14 @@ export type AuthResponse = {
   user_id: string; email: string; pool: "admin";
 };
 
-const ADMIN = process.env.NEXT_PUBLIC_ADMIN_URL || "http://localhost:8005";
-const AUTH = process.env.NEXT_PUBLIC_AUTH_URL || "http://localhost:8004";
+function envUrl(name: string, fallback: string): string {
+  return Object.prototype.hasOwnProperty.call(process.env, name)
+    ? process.env[name] ?? ""
+    : fallback;
+}
+
+const ADMIN = envUrl("NEXT_PUBLIC_ADMIN_URL", "http://localhost:8005");
+const AUTH = envUrl("NEXT_PUBLIC_AUTH_URL", "http://localhost:8004");
 
 async function request<T>(url: string, init: RequestInit = {}, token?: string | null): Promise<T> {
   const res = await fetch(url, {

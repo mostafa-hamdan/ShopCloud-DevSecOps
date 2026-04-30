@@ -3,6 +3,11 @@ variable "aws_region" {
   default = "us-east-1"
 }
 
+variable "aws_profile" {
+  type    = string
+  default = "shopcloud-new"
+}
+
 variable "project_name" {
   type    = string
   default = "shopcloud"
@@ -71,4 +76,24 @@ variable "enable_edge" {
 variable "enable_client_vpn" {
   type    = bool
   default = false
+}
+
+variable "node_instance_type" {
+  type    = string
+  default = "t3.small"
+}
+
+variable "node_desired_size" {
+  type    = number
+  default = 2
+}
+
+variable "node_min_size" {
+  type    = number
+  default = 2
+}
+
+variable "node_max_size" {
+  type    = number
+  default = 3
 }
