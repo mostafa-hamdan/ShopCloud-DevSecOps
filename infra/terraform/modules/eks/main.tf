@@ -4,7 +4,7 @@ module "eks" {
   version = "~> 20.31"
 
   cluster_name    = var.cluster_name
-  cluster_version = "1.29"
+  cluster_version = var.cluster_version
 
   vpc_id                   = var.vpc_id
   subnet_ids               = var.node_subnet_ids
@@ -24,9 +24,9 @@ module "eks" {
   }
 
   cluster_addons = {
-    coredns                = {}
-    kube-proxy             = {}
-    vpc-cni                = {}
+    coredns    = {}
+    kube-proxy = {}
+    vpc-cni    = {}
   }
 
   tags = var.tags

@@ -83,6 +83,11 @@ variable "node_instance_type" {
   default = "t3.small"
 }
 
+variable "cluster_version" {
+  type    = string
+  default = "1.33"
+}
+
 variable "node_desired_size" {
   type    = number
   default = 2

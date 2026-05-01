@@ -29,22 +29,22 @@ resource "aws_security_group" "this" {
 }
 
 resource "aws_db_instance" "this" {
-  count                     = var.enabled ? 1 : 0
-  identifier                = var.name
-  engine                    = "postgres"
-  engine_version            = var.engine_version
-  instance_class            = var.instance_class
-  allocated_storage         = var.allocated_storage
-  username                  = "shopcloud"
+  count                       = var.enabled ? 1 : 0
+  identifier                  = var.name
+  engine                      = "postgres"
+  engine_version              = var.engine_version
+  instance_class              = var.instance_class
+  allocated_storage           = var.allocated_storage
+  username                    = "shopcloud"
   manage_master_user_password = true
-  db_name                   = "shopcloud"
-  skip_final_snapshot       = true
-  multi_az                  = var.multi_az
-  publicly_accessible       = false
-  storage_encrypted         = true
-  db_subnet_group_name      = aws_db_subnet_group.this[0].name
-  vpc_security_group_ids    = [aws_security_group.this[0].id]
-  deletion_protection       = false
-  backup_retention_period   = 1
-  tags                      = var.tags
+  db_name                     = "shopcloud"
+  skip_final_snapshot         = true
+  multi_az                    = var.multi_az
+  publicly_accessible         = false
+  storage_encrypted           = true
+  db_subnet_group_name        = aws_db_subnet_group.this[0].name
+  vpc_security_group_ids      = [aws_security_group.this[0].id]
+  deletion_protection         = false
+  backup_retention_period     = 1
+  tags                        = var.tags
 }

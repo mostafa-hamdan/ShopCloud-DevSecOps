@@ -23,7 +23,7 @@ resource "aws_ec2_client_vpn_endpoint" "this" {
   security_group_ids     = [aws_security_group.this[0].id]
 
   authentication_options {
-    type = "certificate-authentication"
+    type                       = "certificate-authentication"
     root_certificate_chain_arn = var.server_certificate_arn
   }
 

@@ -5,4 +5,7 @@ variable "invoice_bucket_name" { type = string }
 variable "queue_arn" { type = string }
 variable "dlq_arn" { type = string }
 variable "email_sender" { type = string }
-variable "tags" { type = map(string) default = {} }
+variable "tags" {
+  type    = map(string)
+  default = {}
+}

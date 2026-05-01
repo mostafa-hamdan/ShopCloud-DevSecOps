@@ -17,7 +17,7 @@ resource "aws_wafv2_web_acl" "this" {
 }
 
 resource "aws_cloudfront_distribution" "this" {
-  count = var.enabled ? 1 : 0
+  count   = var.enabled ? 1 : 0
   enabled = true
 
   origin {

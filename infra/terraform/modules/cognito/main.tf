@@ -8,9 +8,9 @@ resource "aws_cognito_user_pool" "customer" {
 }
 
 resource "aws_cognito_user_pool_client" "customer" {
-  count         = var.enabled ? 1 : 0
-  name          = "customer-client"
-  user_pool_id  = aws_cognito_user_pool.customer[0].id
+  count           = var.enabled ? 1 : 0
+  name            = "customer-client"
+  user_pool_id    = aws_cognito_user_pool.customer[0].id
   generate_secret = false
 }
 

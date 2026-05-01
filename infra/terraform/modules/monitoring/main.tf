@@ -11,10 +11,10 @@ resource "aws_cloudwatch_dashboard" "this" {
   dashboard_body = jsonencode({
     widgets = [
       {
-        type = "text"
-        x    = 0
-        y    = 0
-        width = 24
+        type   = "text"
+        x      = 0
+        y      = 0
+        width  = 24
         height = 4
         properties = {
           markdown = "ShopCloud dashboard placeholder. Add ALB, RDS, Lambda, and SQS widgets after resources exist."
