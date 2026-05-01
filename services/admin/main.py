@@ -66,6 +66,11 @@ class ProductUpdateIn(BaseModel):
     category_slug: Optional[str] = None
 
 
+class AdminLoginIn(BaseModel):
+    email: str
+    password: str
+
+
 # ---------- helpers ----------
 
 def _catalog_url(path: str) -> str:
@@ -86,6 +91,19 @@ def _proxy(method: str, url: str, **kwargs):
     if r.status_code == 204 or not r.content:
         return None
     return r.json()
+
+
+def _proxy_auth_login(url: str, payload: dict):
+    r = http_call("POST", url, json=payload, timeout=10.0)
+    raise_for_upstream(r)
+    return r.json()
+
+
+# ---------- admin login ----------
+
+@app.post("/admin/login")
+def admin_login(payload: AdminLoginIn):
+    return _proxy_auth_login(_auth_url("/auth/admin/login"), payload.model_dump())
 
 
 # ---------- products ----------

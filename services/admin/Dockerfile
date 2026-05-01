@@ -1,7 +1,8 @@
 FROM python:3.12-slim
 WORKDIR /app
 COPY shared /shared
-RUN pip install --no-cache-dir /shared
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+RUN pip install --no-cache-dir --no-build-isolation /shared
 COPY services/admin/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 COPY services/admin /app/admin

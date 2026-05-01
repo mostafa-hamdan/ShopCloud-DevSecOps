@@ -108,6 +108,11 @@ async function request<T>(url: string, init: RequestInit = {}, token?: string | 
       const body = await res.json();
       detail = detailToMessage(body.detail ?? body);
     } catch { /* ignore */ }
+    if (res.status === 401 && typeof window !== "undefined") {
+      window.localStorage.removeItem("shopcloud.admin.auth");
+      setTimeout(() => window.location.reload(), 50);
+      throw new Error("Session expired. Please sign in again.");
+    }
     throw new Error(detail);
   }
   if (res.status === 204) return undefined as unknown as T;
@@ -116,7 +121,7 @@ async function request<T>(url: string, init: RequestInit = {}, token?: string | 
 
 export const adminAuth = {
   login: (email: string, password: string) =>
-    request<AuthResponse>(`${AUTH}/auth/admin/login`, {
+    request<AuthResponse>(`${ADMIN}/login`, {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),
