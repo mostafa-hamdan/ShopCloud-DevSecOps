@@ -76,16 +76,10 @@ export type Review = {
   rating: number; title: string; body: string; created_at: string;
 };
 
-function envUrl(name: string, fallback: string): string {
-  return Object.prototype.hasOwnProperty.call(process.env, name)
-    ? process.env[name] ?? ""
-    : fallback;
-}
-
-const AUTH = envUrl("NEXT_PUBLIC_AUTH_URL", "http://localhost:8004");
-const CATALOG = envUrl("NEXT_PUBLIC_CATALOG_URL", "http://localhost:8001");
-const CART = envUrl("NEXT_PUBLIC_CART_URL", "http://localhost:8002");
-const CHECKOUT = envUrl("NEXT_PUBLIC_CHECKOUT_URL", "http://localhost:8003");
+const AUTH = process.env.NEXT_PUBLIC_AUTH_URL || "";
+const CATALOG = process.env.NEXT_PUBLIC_CATALOG_URL || "";
+const CART = process.env.NEXT_PUBLIC_CART_URL || "";
+const CHECKOUT = process.env.NEXT_PUBLIC_CHECKOUT_URL || "";
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
