@@ -30,3 +30,11 @@ output "rds_master_user_secret_arn" {
 output "redis_primary_endpoint" {
   value = module.redis.primary_endpoint
 }
+
+output "monitoring_dashboard_name" {
+  value = module.monitoring.dashboard_name
+}
+
+output "cloudfront_domain_name" {
+  value = module.edge.distribution_domain_name
+}

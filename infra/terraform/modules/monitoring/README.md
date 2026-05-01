@@ -1,3 +1,7 @@
 # monitoring module
 
-Creates a simple CloudWatch dashboard and placeholder log groups.
+Creates a CloudWatch dashboard plus low-noise alarms for:
+- Lambda errors
+- SQS backlog and DLQ activity
+- RDS CPU
+- ALB 5xx responses

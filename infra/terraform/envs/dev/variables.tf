@@ -78,6 +78,26 @@ variable "enable_client_vpn" {
   default = false
 }
 
+variable "public_alb_dns_name" {
+  type    = string
+  default = "k8s-publicshopcloud-c9b58cfdd0-112985133.us-east-1.elb.amazonaws.com"
+}
+
+variable "public_alb_zone_id" {
+  type    = string
+  default = "Z35SXDOTRQ7X7K"
+}
+
+variable "public_alb_arn_suffix" {
+  type    = string
+  default = "app/k8s-publicshopcloud-c9b58cfdd0/c84ee2795dfa9384"
+}
+
+variable "redis_cache_cluster_id" {
+  type    = string
+  default = "shopcloud-dev-redis-001"
+}
+
 variable "node_instance_type" {
   type    = string
   default = "t3.small"

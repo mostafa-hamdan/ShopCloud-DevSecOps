@@ -126,21 +126,28 @@ module "cognito" {
 }
 
 module "monitoring" {
-  source         = "../../modules/monitoring"
-  enabled        = var.enable_monitoring
-  dashboard_name = "${var.project_name}-${var.environment}"
-  tags           = local.tags
+  source               = "../../modules/monitoring"
+  enabled              = var.enable_monitoring
+  dashboard_name       = "${var.project_name}-${var.environment}"
+  lambda_function_name = "${var.project_name}-${var.environment}-invoice-generator"
+  sqs_queue_name       = "${var.project_name}-${var.environment}-invoice-queue"
+  sqs_dlq_name         = "${var.project_name}-${var.environment}-invoice-dlq"
+  rds_instance_id      = "${var.project_name}-${var.environment}-postgres"
+  redis_cluster_id     = var.redis_cache_cluster_id
+  alb_arn_suffix       = var.public_alb_arn_suffix
+  tags                 = local.tags
 }
 
 module "edge" {
-  source              = "../../modules/edge"
-  enabled             = var.enable_edge
-  project_name        = var.project_name
-  environment         = var.environment
-  domain_name         = "example.com"
-  public_alb_dns_name = "replace-me"
-  public_alb_zone_id  = "replace-me"
-  tags                = local.tags
+  source                 = "../../modules/edge"
+  enabled                = var.enable_edge
+  project_name           = var.project_name
+  environment            = var.environment
+  domain_name            = "example.com"
+  public_alb_dns_name    = var.public_alb_dns_name
+  public_alb_zone_id     = var.public_alb_zone_id
+  origin_protocol_policy = "http-only"
+  tags                   = local.tags
 }
 
 module "client_vpn" {

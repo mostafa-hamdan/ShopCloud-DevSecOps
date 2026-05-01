@@ -4,6 +4,10 @@ variable "environment" { type = string }
 variable "domain_name" { type = string }
 variable "public_alb_dns_name" { type = string }
 variable "public_alb_zone_id" { type = string }
+variable "origin_protocol_policy" {
+  type    = string
+  default = "http-only"
+}
 variable "tags" {
   type    = map(string)
   default = {}
