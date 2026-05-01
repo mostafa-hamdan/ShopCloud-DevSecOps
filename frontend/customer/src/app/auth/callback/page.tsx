@@ -9,7 +9,7 @@
 // stash the access_token in the auth context, and bounce the user
 // to the homepage. If anything fails we surface the error.
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { exchangeCustomerCode } from "@/lib/cognito";
@@ -19,8 +19,12 @@ function Callback() {
   const router = useRouter();
   const { applyCognitoTokens } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const handledRef = useRef(false);
 
   useEffect(() => {
+    if (handledRef.current) return;
+    handledRef.current = true;
+
     const code = params.get("code");
     const oauthError = params.get("error");
 

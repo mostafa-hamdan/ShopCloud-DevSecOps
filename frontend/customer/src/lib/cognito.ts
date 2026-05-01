@@ -8,7 +8,7 @@
 //      with response_type=code and a PKCE challenge derived from a
 //      random verifier we stash in sessionStorage.
 //   3. Cognito authenticates the user and redirects back to
-//      /auth/callback?code=...
+//      /cognito/callback?code=...
 //   4. The callback page POSTs the code + verifier to /oauth2/token
 //      and gets back an id_token, access_token, refresh_token.
 //   5. We store the access_token in localStorage like the local flow,
@@ -106,9 +106,10 @@ export async function exchangeCustomerCode(code: string): Promise<{
  * but it tears down the Cognito session cookie too. */
 export function cognitoLogoutUrl(): string | null {
   if (!customerCognitoConfigured()) return null;
+  const logoutUri = new URL(REDIRECT_URI!).origin;
   const params = new URLSearchParams({
     client_id: CLIENT_ID!,
-    logout_uri: REDIRECT_URI!.replace("/auth/callback", ""),
+    logout_uri: logoutUri,
   });
   return `https://${POOL_DOMAIN}.auth.${REGION}.amazoncognito.com/logout?${params}`;
 }
