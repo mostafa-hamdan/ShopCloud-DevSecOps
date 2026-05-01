@@ -14,10 +14,13 @@ if (-not $EndpointId) {
   throw "EndpointId is required."
 }
 
-$base = aws ec2 export-client-vpn-client-configuration `
+$baseJson = aws ec2 export-client-vpn-client-configuration `
   --client-vpn-endpoint-id $EndpointId `
   --profile $Profile `
   --region $Region
+
+$baseObject = $baseJson | ConvertFrom-Json
+$base = $baseObject.ClientConfiguration -replace "\\n", [Environment]::NewLine
 
 $cert = Get-Content $ClientCertPath -Raw
 $key = Get-Content $ClientKeyPath -Raw
