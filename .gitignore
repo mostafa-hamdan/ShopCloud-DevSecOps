@@ -36,6 +36,8 @@ runtime/invoices/*
 runtime/outbox/*
 !runtime/outbox/.gitkeep
 lambda/**/package/
+runtime/client-vpn/*
+!runtime/client-vpn/.gitkeep
 
 # OS / editor
 .DS_Store

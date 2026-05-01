@@ -151,12 +151,12 @@ module "edge" {
 }
 
 module "client_vpn" {
-  source                 = "../../modules/client-vpn"
-  enabled                = var.enable_client_vpn
-  name                   = "${var.project_name}-${var.environment}-admin"
-  vpc_id                 = module.networking.vpc_id
-  subnet_ids             = module.networking.private_subnet_ids
-  server_certificate_arn = "replace-me"
-  client_cidr_block      = "172.16.0.0/22"
-  tags                   = local.tags
+  source              = "../../modules/client-vpn"
+  enabled             = var.enable_client_vpn
+  name                = "${var.project_name}-${var.environment}-admin"
+  vpc_id              = module.networking.vpc_id
+  subnet_ids          = module.networking.private_subnet_ids
+  client_cidr_block   = "172.16.0.0/22"
+  target_network_cidr = "10.20.0.0/16"
+  tags                = local.tags
 }

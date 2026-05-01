@@ -1,0 +1,30 @@
+# Turn on VPN before Terraform commands.
+# Stage 6b enables AWS Client VPN for the private admin path.
+
+aws_region  = "us-east-1"
+aws_profile = "shopcloud-new"
+
+enable_networking = true
+enable_eks        = true
+enable_rds        = true
+enable_redis      = true
+enable_s3         = true
+enable_sqs        = true
+enable_lambda     = true
+enable_monitoring = true
+enable_edge       = true
+enable_cognito    = true
+enable_client_vpn = true
+
+enable_ecr        = false
+
+public_alb_dns_name    = "k8s-publicshopcloud-c9b58cfdd0-112985133.us-east-1.elb.amazonaws.com"
+public_alb_zone_id     = "Z35SXDOTRQ7X7K"
+public_alb_arn_suffix  = "app/k8s-publicshopcloud-c9b58cfdd0/c84ee2795dfa9384"
+redis_cache_cluster_id = "shopcloud-dev-redis-001"
+
+node_instance_type = "t3.small"
+cluster_version    = "1.33"
+node_desired_size  = 2
+node_min_size      = 2
+node_max_size      = 3

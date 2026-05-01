@@ -11,6 +11,22 @@ metadata:
     alb.ingress.kubernetes.io/group.name: internal-admin
 spec:
   rules:
+    - http:
+        paths:
+          - path: /admin
+            pathType: Prefix
+            backend:
+              service:
+                name: admin
+                port:
+                  number: 8005
+          - path: /auth/admin
+            pathType: Prefix
+            backend:
+              service:
+                name: auth
+                port:
+                  number: 8004
     - host: admin-api.shopcloud.internal
       http:
         paths:

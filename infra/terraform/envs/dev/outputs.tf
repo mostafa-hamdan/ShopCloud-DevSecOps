@@ -54,3 +54,23 @@ output "cognito_admin_user_pool_id" {
 output "cognito_admin_user_pool_client_id" {
   value = module.cognito.admin_user_pool_client_id
 }
+
+output "client_vpn_endpoint_id" {
+  value = module.client_vpn.endpoint_id
+}
+
+output "client_vpn_endpoint_dns_name" {
+  value = module.client_vpn.endpoint_dns_name
+}
+
+output "client_vpn_client_cert_path" {
+  value = module.client_vpn.client_cert_path
+}
+
+output "client_vpn_client_key_path" {
+  value = module.client_vpn.client_key_path
+}
+
+output "client_vpn_ca_cert_path" {
+  value = module.client_vpn.ca_cert_path
+}
