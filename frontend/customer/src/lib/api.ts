@@ -78,7 +78,7 @@ export type Review = {
 
 const AUTH = process.env.NEXT_PUBLIC_AUTH_URL || "";
 const CATALOG = process.env.NEXT_PUBLIC_CATALOG_URL || "";
-const CART = process.env.NEXT_PUBLIC_CART_URL || "";
+const CART = process.env.NEXT_PUBLIC_CART_URL || "/api";
 const CHECKOUT = process.env.NEXT_PUBLIC_CHECKOUT_URL || "";
 
 export class ApiError extends Error {

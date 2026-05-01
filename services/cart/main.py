@@ -132,12 +132,14 @@ def _fetch_product(product_id: str) -> Optional[dict]:
 # ---------- cart routes ----------
 
 @app.get("/cart", response_model=CartOut)
+@app.get("/api/cart", response_model=CartOut)
 def get_cart(claims: TokenClaims = Depends(require_customer)) -> CartOut:
     raw = get_redis().hgetall(_cart_key(claims.sub))
     return _hydrate_cart(claims.sub, raw)
 
 
 @app.post("/cart/items", response_model=CartOut)
+@app.post("/api/cart/items", response_model=CartOut)
 def add_item(item: CartItemIn,
              claims: TokenClaims = Depends(require_customer)) -> CartOut:
     p = _fetch_product(item.product_id)
@@ -153,6 +155,7 @@ def add_item(item: CartItemIn,
 
 
 @app.put("/cart/items/{product_id}", response_model=CartOut)
+@app.put("/api/cart/items/{product_id}", response_model=CartOut)
 def set_item_qty(product_id: str, item: CartItemIn,
                  claims: TokenClaims = Depends(require_customer)) -> CartOut:
     if item.product_id != product_id:
@@ -165,6 +168,7 @@ def set_item_qty(product_id: str, item: CartItemIn,
 
 
 @app.delete("/cart/items/{product_id}", response_model=CartOut)
+@app.delete("/api/cart/items/{product_id}", response_model=CartOut)
 def remove_item(product_id: str,
                 claims: TokenClaims = Depends(require_customer)) -> CartOut:
     r = get_redis()
@@ -174,6 +178,7 @@ def remove_item(product_id: str,
 
 
 @app.delete("/cart", response_model=CartOut)
+@app.delete("/api/cart", response_model=CartOut)
 def clear_cart(claims: TokenClaims = Depends(require_customer)) -> CartOut:
     get_redis().delete(_cart_key(claims.sub))
     return CartOut(user_id=claims.sub, items=[], subtotal_cents=0, currency="USD")
@@ -196,6 +201,7 @@ def clear_cart_for_checkout(user_id: str) -> None:
 # ---------- wishlist routes ----------
 
 @app.get("/wishlist", response_model=WishlistOut)
+@app.get("/api/wishlist", response_model=WishlistOut)
 def get_wishlist(claims: TokenClaims = Depends(require_customer)) -> WishlistOut:
     ids = list(get_redis().smembers(_wishlist_key(claims.sub)))
     items: list[WishlistEntryOut] = []
@@ -214,6 +220,7 @@ def get_wishlist(claims: TokenClaims = Depends(require_customer)) -> WishlistOut
 
 
 @app.post("/wishlist/items", response_model=WishlistOut, status_code=201)
+@app.post("/api/wishlist/items", response_model=WishlistOut, status_code=201)
 def add_wishlist_item(item: WishlistItemIn,
                       claims: TokenClaims = Depends(require_customer)) -> WishlistOut:
     p = _fetch_product(item.product_id)
@@ -227,6 +234,7 @@ def add_wishlist_item(item: WishlistItemIn,
 
 
 @app.delete("/wishlist/items/{product_id}", response_model=WishlistOut)
+@app.delete("/api/wishlist/items/{product_id}", response_model=WishlistOut)
 def remove_wishlist_item(product_id: str,
                          claims: TokenClaims = Depends(require_customer)) -> WishlistOut:
     get_redis().srem(_wishlist_key(claims.sub), product_id)

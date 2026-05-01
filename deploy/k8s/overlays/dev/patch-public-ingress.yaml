@@ -20,14 +20,14 @@
                 name: catalog
                 port:
                   number: 8001
-          - path: /cart
+          - path: /api/cart
             pathType: Prefix
             backend:
               service:
                 name: cart
                 port:
                   number: 8002
-          - path: /wishlist
+          - path: /api/wishlist
             pathType: Prefix
             backend:
               service:

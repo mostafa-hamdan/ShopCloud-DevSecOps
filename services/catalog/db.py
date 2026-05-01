@@ -112,17 +112,17 @@ def _seed_if_empty() -> None:
         s.flush()
 
         seed = [
-            ("SKU-T01", "Cotton T-Shirt", "Soft cotton, classic fit.", 1999, "apparel", 50),
-            ("SKU-J02", "Denim Jacket", "Mid-weight denim jacket.", 7999, "apparel", 18),
-            ("SKU-H01", "Wireless Headphones", "Over-ear, 30h battery.", 12999, "electronics", 25),
-            ("SKU-K01", "Mechanical Keyboard", "Tactile switches, USB-C.", 8999, "electronics", 12),
-            ("SKU-M02", "Ceramic Mug", "12oz, dishwasher safe.", 1499, "home", 100),
-            ("SKU-L03", "Desk Lamp", "Adjustable warm/cool.", 4499, "home", 30),
+            ("SKU-T01", "Cotton T-Shirt", "Soft cotton, classic fit.", 1999, "apparel", 50, "/products/cotton-tshirt.jpg"),
+            ("SKU-J02", "Denim Jacket", "Mid-weight denim jacket.", 7999, "apparel", 18, "/products/denim-jacket.jpg"),
+            ("SKU-H01", "Wireless Headphones", "Over-ear, 30h battery.", 12999, "electronics", 25, "/products/wireless-headphones.jpg"),
+            ("SKU-K01", "Mechanical Keyboard", "Tactile switches, USB-C.", 8999, "electronics", 12, "/products/mechanical-keyboard.jpg"),
+            ("SKU-M02", "Ceramic Mug", "12oz, dishwasher safe.", 1499, "home", 100, "/products/ceramic-mug.jpg"),
+            ("SKU-L03", "Desk Lamp", "Adjustable warm/cool.", 4499, "home", 30, "/products/desk-lamp.jpg"),
         ]
-        for sku, name, desc, price, cat, stock in seed:
+        for sku, name, desc, price, cat, stock, image_url in seed:
             s.add(Product(
                 sku=sku, name=name, description=desc,
                 price_cents=price, category_id=cats[cat].id, stock=stock,
-                image_url=f"https://picsum.photos/seed/{sku}/600/400",
+                image_url=image_url,
             ))
         s.commit()
