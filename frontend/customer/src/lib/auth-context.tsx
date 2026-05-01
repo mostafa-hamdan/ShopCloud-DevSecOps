@@ -88,12 +88,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const applyCognitoTokens = useCallback(
-    (idToken: string, accessToken: string) => {
-      // We send the access_token to backend services; they verify it
-      // via Cognito JWKS (see shared/pyshared/auth.py).
+    (idToken: string, _accessToken: string) => {
+      // The backend verifies Cognito JWTs by issuer and app-client audience.
+      // Use the ID token so service-side claims include the customer email.
       const claims = decodeIdToken(idToken);
       const next = {
-        token: accessToken,
+        token: idToken,
         userId: claims.sub,
         email: claims.email,
       };

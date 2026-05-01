@@ -66,9 +66,9 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     writeStorage(next);
   }, []);
 
-  const applyCognitoTokens = useCallback((idToken: string, accessToken: string) => {
+  const applyCognitoTokens = useCallback((idToken: string, _accessToken: string) => {
     const claims = decodeIdToken(idToken);
-    const next = { token: accessToken, userId: claims.sub, email: claims.email };
+    const next = { token: idToken, userId: claims.sub, email: claims.email };
     setState(next);
     writeStorage(next);
   }, []);
