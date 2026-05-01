@@ -22,7 +22,12 @@ export default function HomePage() {
     setLoading(true);
     catalog
       .list(search || undefined, activeCategory, 24)
-      .then((r) => { if (!cancelled) setProducts(r.items); })
+      .then((r) => {
+        if (!cancelled) {
+          setProducts(r.items);
+          setError(null);
+        }
+      })
       .catch((e) => { if (!cancelled) setError(e.message); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
@@ -40,7 +45,7 @@ export default function HomePage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search products…"
+          placeholder="Search products..."
           className="flex-1 px-3 py-2 border border-black/15 rounded bg-white focus:outline-none focus:border-accent"
         />
         <div className="flex gap-2 flex-wrap">
@@ -69,7 +74,7 @@ export default function HomePage() {
       </div>
 
       {error && <p className="text-red-700 mb-4">Could not load products: {error}</p>}
-      {loading && <p className="text-black/60">Loading…</p>}
+      {loading && <p className="text-black/60">Loading...</p>}
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {products.map((p) => (
@@ -81,7 +86,7 @@ export default function HomePage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={p.image_url} alt={p.name} className="w-full aspect-[3/2] object-cover" />
             <div className="p-3">
-              <p className="text-sm text-black/50">{p.category?.name ?? "—"}</p>
+              <p className="text-sm text-black/50">{p.category?.name ?? "-"}</p>
               <h3 className="font-medium leading-tight group-hover:text-accent">{p.name}</h3>
               <p className="mt-1 font-semibold">{formatMoney(p.price_cents, p.currency)}</p>
             </div>
