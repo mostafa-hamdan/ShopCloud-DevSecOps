@@ -35,6 +35,7 @@ runtime/invoices/*
 !runtime/invoices/.gitkeep
 runtime/outbox/*
 !runtime/outbox/.gitkeep
+lambda/**/package/
 
 # OS / editor
 .DS_Store

@@ -1,0 +1,26 @@
+# Turn on VPN before Terraform commands.
+# Stage 5 adds the managed invoice pipeline: SQS + DLQ, S3, Lambda, SES permissions, and checkout IRSA.
+# SES sandbox still requires verified recipient emails.
+
+aws_region  = "us-east-1"
+aws_profile = "shopcloud-new"
+
+enable_networking = true
+enable_eks        = true
+enable_rds        = true
+enable_redis      = true
+enable_s3         = true
+enable_sqs        = true
+enable_lambda     = true
+
+enable_ecr        = false
+enable_cognito    = false
+enable_monitoring = false
+enable_edge       = false
+enable_client_vpn = false
+
+node_instance_type = "t3.small"
+cluster_version    = "1.33"
+node_desired_size  = 2
+node_min_size      = 2
+node_max_size      = 3

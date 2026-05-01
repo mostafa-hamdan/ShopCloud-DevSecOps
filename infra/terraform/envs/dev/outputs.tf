@@ -10,6 +10,14 @@ output "invoice_bucket" {
   value = module.s3.bucket_name
 }
 
+output "invoice_queue_url" {
+  value = module.sqs.queue_url
+}
+
+output "checkout_irsa_role_arn" {
+  value = module.checkout_irsa.role_arn
+}
+
 output "rds_endpoint" {
   value = module.rds.endpoint
 }

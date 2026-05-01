@@ -73,7 +73,7 @@ module "redis" {
 module "s3" {
   source      = "../../modules/s3"
   enabled     = var.enable_s3
-  bucket_name = "${var.project_name}-${var.environment}-invoices"
+  bucket_name = "${var.project_name}-${var.environment}-invoices-338078971311"
   tags        = local.tags
 }
 
@@ -88,12 +88,33 @@ module "lambda" {
   source              = "../../modules/lambda"
   enabled             = var.enable_lambda
   function_name       = "${var.project_name}-${var.environment}-invoice-generator"
-  package_file        = "../../../lambda/invoice_generator/function.zip"
+  package_file        = "../../../../lambda/invoice_generator/function.zip"
   invoice_bucket_name = module.s3.bucket_name
   queue_arn           = module.sqs.queue_arn
   dlq_arn             = module.sqs.dlq_arn
-  email_sender        = "replace-me@example.com"
+  email_sender        = "mmh173@mail.aub.edu"
   tags                = local.tags
+}
+
+module "checkout_irsa" {
+  source               = "../../modules/irsa"
+  enabled              = var.enable_sqs
+  role_name            = "${var.project_name}-${var.environment}-checkout-sqs"
+  oidc_provider_arn    = module.eks.oidc_provider_arn
+  oidc_provider_url    = module.eks.oidc_provider_url
+  namespace            = "shopcloud"
+  service_account_name = "shopcloud-checkout"
+  policy_json = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["sqs:SendMessage", "sqs:GetQueueAttributes"]
+        Resource = module.sqs.queue_arn
+      }
+    ]
+  })
+  tags = local.tags
 }
 
 module "cognito" {
