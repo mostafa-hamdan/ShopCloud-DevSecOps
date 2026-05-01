@@ -23,6 +23,7 @@ import {
 import { auth as authApi, AuthResponse } from "./api";
 import {
   decodeIdToken, exchangeCustomerCode, isCognitoMode, startCustomerLogin,
+  startCustomerSignup,
   cognitoLogoutUrl,
 } from "./cognito";
 
@@ -107,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (email?: string, password?: string) => {
       if (authMode === "cognito") {
         // Redirect to Hosted UI; this function does not return.
-        const url = await startCustomerLogin();
+        const url = await startCustomerSignup();
         window.location.assign(url);
         return;
       }

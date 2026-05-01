@@ -55,6 +55,27 @@ export async function startCustomerLogin(): Promise<string> {
   return `https://${POOL_DOMAIN}.auth.${REGION}.amazoncognito.com/oauth2/authorize?${params}`;
 }
 
+export async function startCustomerSignup(): Promise<string> {
+  if (!customerCognitoConfigured()) {
+    throw new Error("Cognito is not configured for the customer app.");
+  }
+
+  const verifier = generatePkceVerifier();
+  const challenge = await pkceChallengeFromVerifier(verifier);
+  sessionStorage.setItem(PKCE_VERIFIER_KEY, verifier);
+
+  const params = new URLSearchParams({
+    client_id: CLIENT_ID!,
+    response_type: "code",
+    scope: "openid email profile",
+    redirect_uri: REDIRECT_URI!,
+    code_challenge: challenge,
+    code_challenge_method: "S256",
+  });
+
+  return `https://${POOL_DOMAIN}.auth.${REGION}.amazoncognito.com/signup?${params}`;
+}
+
 /** Exchange the authorization code returned by Cognito for tokens. */
 export async function exchangeCustomerCode(code: string): Promise<{
   access_token: string;

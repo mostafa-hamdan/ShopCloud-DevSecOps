@@ -32,7 +32,7 @@ export default function RegisterPage() {
         <h1 className="text-2xl font-semibold mb-1">Create your account</h1>
         <p className="text-sm text-black/60 mb-5">
           Account creation is handled by AWS Cognito. You will be redirected to its
-          sign-up page.
+          dedicated sign-up page.
         </p>
         {error && <p className="text-red-700 text-sm mb-3">{error}</p>}
         <button
