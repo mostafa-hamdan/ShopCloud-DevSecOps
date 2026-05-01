@@ -1,0 +1,35 @@
+name: Deploy Dev To EKS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig \
+            --name "${{ secrets.EKS_CLUSTER_NAME }}" \
+            --region "${{ secrets.AWS_REGION }}"
+
+      - name: Deploy dev overlay
+        run: kubectl apply -k deploy/k8s/overlays/dev
+
+      - name: Wait for core rollouts
+        run: |
+          for app in customer-web catalog cart checkout auth admin; do
+            kubectl rollout status "deployment/${app}" -n "${{ secrets.KUBE_NAMESPACE }}" --timeout=180s
+          done
+
+      - name: Show ingress
+        run: kubectl get ingress -n "${{ secrets.KUBE_NAMESPACE }}"

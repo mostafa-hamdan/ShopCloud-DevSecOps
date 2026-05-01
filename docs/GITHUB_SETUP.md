@@ -65,3 +65,11 @@ If you want a more detailed history before pushing, split into:
 - `TF_VAR_environment`
 
 Do not add secrets until the AWS stages are approved.
+
+Current dev values:
+- `AWS_REGION`: `us-east-1`
+- `ECR_REGISTRY`: `338078971311.dkr.ecr.us-east-1.amazonaws.com`
+- `EKS_CLUSTER_NAME`: `shopcloud-dev`
+- `KUBE_NAMESPACE`: `shopcloud`
+
+Keep deploy workflows manual and environment-protected for the final demo.

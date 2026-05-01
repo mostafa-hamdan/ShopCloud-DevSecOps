@@ -167,6 +167,19 @@ The Terraform code is **gated** — every module defaults to `enabled = false`
 so a fresh checkout costs nothing. See `docs/DEPLOYMENT_PLAN.md` for the
 8-stage rollout. Read `COST_NOTES.md` before any `terraform apply`.
 
+Current live dev environment:
+
+| Component | Value |
+| --- | --- |
+| Region | `us-east-1` |
+| EKS cluster | `shopcloud-dev` |
+| Public HTTPS URL | `https://dia46ciw5njau.cloudfront.net` |
+| Public ALB | `k8s-publicshopcloud-c9b58cfdd0-112985133.us-east-1.elb.amazonaws.com` |
+| Internal admin ALB | `internal-k8s-internaladmin-50c598b1ca-1815347815.us-east-1.elb.amazonaws.com` |
+| CloudWatch dashboard | `shopcloud-dev-dashboard` |
+| Cognito customer pool | `us-east-1_ML4GVS8pk` |
+| Cognito admin pool | `us-east-1_UullAvJJ1` |
+
 The toggles to flip when going live:
 
 ```hcl
@@ -188,6 +201,20 @@ enable_client_vpn  = true   # admin VPN
 Then in the prod overlay configmap, set `JWT_VERIFIER=cognito`,
 `QUEUE_BACKEND=sqs`, `STORAGE_BACKEND=s3`, `MAIL_BACKEND=ses`. The
 service code already handles both paths — no code change needed.
+
+## CI/CD
+
+GitHub Actions workflows:
+
+| Workflow | Purpose |
+| --- | --- |
+| `ci.yml` | Unit tests, Compose validation, integration tests, Docker build checks |
+| `terraform-validate.yml` | Terraform fmt/init/validate |
+| `trivy.yml` | Filesystem vulnerability scan |
+| `docker-build.yml` | Manual ECR image build/push |
+| `deploy-dev.yml` | Manual EKS dev deployment |
+
+Deployment remains manually triggered for cost control and demo stability.
 
 ## Reading order for the curious
 
