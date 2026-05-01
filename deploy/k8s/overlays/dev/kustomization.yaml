@@ -5,6 +5,10 @@ resources:
   - internal-admin-api-ingress.yaml
 patches:
   - path: patch-configmap.yaml
+  - path: patch-customer-cognito-env.yaml
+  - path: patch-catalog-cognito-env.yaml
+  - path: patch-cart-cognito-env.yaml
+  - path: patch-checkout-cognito-env.yaml
   - target:
       version: v1
       kind: ServiceAccount

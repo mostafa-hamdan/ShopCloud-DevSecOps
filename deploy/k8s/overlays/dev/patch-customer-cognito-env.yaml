@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customer-web
+  namespace: shopcloud
+spec:
+  template:
+    spec:
+      containers:
+        - name: customer-web
+          env:
+            - name: NEXT_PUBLIC_AUTH_MODE
+              value: "cognito"
+            - name: NEXT_PUBLIC_COGNITO_REGION
+              value: "us-east-1"
+            - name: NEXT_PUBLIC_COGNITO_CUSTOMER_DOMAIN
+              value: "shopcloud-dev-customers"
+            - name: NEXT_PUBLIC_COGNITO_CUSTOMER_CLIENT_ID
+              value: "s6uarb38gsig7gvdpd23v9e5t"
+            - name: NEXT_PUBLIC_COGNITO_CUSTOMER_REDIRECT_URI
+              value: "https://www.shopcloud312.com/auth/callback"

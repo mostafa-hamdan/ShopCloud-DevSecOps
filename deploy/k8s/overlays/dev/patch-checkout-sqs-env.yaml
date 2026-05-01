@@ -1,5 +1,5 @@
 - op: replace
-  path: /spec/template/spec/containers/0/env/3
+  path: /spec/template/spec/containers/0/env/9
   value:
     name: INVOICE_QUEUE_URL
     value: "https://sqs.us-east-1.amazonaws.com/338078971311/shopcloud-dev-invoice-queue"

@@ -23,6 +23,8 @@ Use the customer user pool app client.
 
 - Hosted UI domain prefix: `shopcloud-dev-customers`
 - Hosted UI domain: `shopcloud-dev-customers.auth.us-east-1.amazoncognito.com`
+- User pool ID: `us-east-1_ML4GVS8pk`
+- App client ID: `s6uarb38gsig7gvdpd23v9e5t`
 - Callback URLs:
   - `https://www.shopcloud312.com/auth/callback`
   - `https://dia46ciw5njau.cloudfront.net/auth/callback`
@@ -33,6 +35,9 @@ Use the customer user pool app client.
 - PKCE: enabled by the frontend
 - Scopes: `openid`, `email`, `profile`
 - Client secret: none
+
+Status: configured in AWS. Kubernetes activation is staged separately so
+the working public demo can be rolled forward or back cleanly.
 
 ## Admin Cognito Settings
 
@@ -66,26 +71,35 @@ If the HTTPS internal admin URL is created later, use:
 
 ## Kubernetes Configuration For Customer Cutover
 
-Add these values to the dev frontend environment before rebuilding the
-customer frontend:
+The dev overlay contains customer-only activation patches:
+
+- `patch-customer-cognito-env.yaml` enables Cognito only for
+  `customer-web`.
+- `patch-catalog-cognito-env.yaml`, `patch-cart-cognito-env.yaml`, and
+  `patch-checkout-cognito-env.yaml` enable Cognito JWT verification only
+  on customer-facing APIs.
+- Admin remains on local/demo auth because its current private ALB URL is
+  HTTP, and Cognito Hosted UI callbacks require HTTPS except localhost.
+
+The customer frontend values are:
 
 ```yaml
 NEXT_PUBLIC_AUTH_MODE: "cognito"
 NEXT_PUBLIC_COGNITO_REGION: "us-east-1"
 NEXT_PUBLIC_COGNITO_CUSTOMER_DOMAIN: "shopcloud-dev-customers"
-NEXT_PUBLIC_COGNITO_CUSTOMER_CLIENT_ID: "<customer-app-client-id>"
+NEXT_PUBLIC_COGNITO_CUSTOMER_CLIENT_ID: "s6uarb38gsig7gvdpd23v9e5t"
 NEXT_PUBLIC_COGNITO_CUSTOMER_REDIRECT_URI: "https://www.shopcloud312.com/auth/callback"
 ```
 
-For backend JWT verification, set:
+For customer-facing backend JWT verification, set:
 
 ```yaml
 JWT_VERIFIER: "cognito"
 COGNITO_REGION: "us-east-1"
 COGNITO_CUSTOMER_POOL_ID: "us-east-1_ML4GVS8pk"
-COGNITO_CUSTOMER_CLIENT_ID: "<customer-app-client-id>"
+COGNITO_CUSTOMER_CLIENT_ID: "s6uarb38gsig7gvdpd23v9e5t"
 COGNITO_ADMIN_POOL_ID: "us-east-1_UullAvJJ1"
-COGNITO_ADMIN_CLIENT_ID: "<admin-app-client-id>"
+COGNITO_ADMIN_CLIENT_ID: "admin-local-not-enabled"
 ```
 
 ## Demo Users
@@ -102,8 +116,8 @@ verified in SES.
 ## Rebuilds Needed
 
 - Customer Cognito only: rebuild and roll out `customer-web`; restart
-  backend pods after `JWT_VERIFIER=cognito` only if you are switching
-  backend verification.
+  `catalog`, `cart`, and `checkout` with their Cognito verifier env
+  patches.
 - Admin Cognito later: rebuild and roll out `admin-web` after an HTTPS
   private admin URL exists.
 - Auth service does not need a rebuild for Hosted UI because Cognito
