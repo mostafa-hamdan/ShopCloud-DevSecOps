@@ -23,7 +23,6 @@ import {
 import { auth as authApi, AuthResponse } from "./api";
 import {
   decodeIdToken, exchangeCustomerCode, isCognitoMode, startCustomerLogin,
-  startCustomerSignup,
   cognitoLogoutUrl,
 } from "./cognito";
 
@@ -108,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (email?: string, password?: string) => {
       if (authMode === "cognito") {
         // Redirect to Hosted UI; this function does not return.
-        const url = await startCustomerSignup();
+        const url = await startCustomerLogin();
         window.location.assign(url);
         return;
       }
@@ -127,8 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Cognito Hosted UI handles registration via its sign-up tab.
         // We send users through the same /authorize URL — Cognito's
         // hosted UI shows "Sign up" alongside "Sign in".
-        const url = await startCustomerLogin();
-        window.location.assign(url);
+        window.location.assign("/register");
         return;
       }
       if (!email || !password) {

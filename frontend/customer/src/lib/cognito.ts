@@ -121,6 +121,91 @@ export async function exchangeCustomerCode(code: string): Promise<{
   return res.json();
 }
 
+export async function signUpCustomer(email: string, password: string, fullName = ""): Promise<{
+  userConfirmed: boolean;
+  destination?: string;
+}> {
+  if (!customerCognitoConfigured()) {
+    throw new Error("Cognito is not configured for the customer app.");
+  }
+
+  const body = {
+    ClientId: CLIENT_ID!,
+    Username: email,
+    Password: password,
+    UserAttributes: [
+      { Name: "email", Value: email },
+      ...(fullName ? [{ Name: "name", Value: fullName }] : []),
+    ],
+  };
+
+  const res = await fetch(`https://cognito-idp.${REGION}.amazonaws.com/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-amz-json-1.1",
+      "X-Amz-Target": "AWSCognitoIdentityProviderService.SignUp",
+    },
+    body: JSON.stringify(body),
+  });
+
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload.message || payload.__type || "Sign-up failed");
+  }
+
+  return {
+    userConfirmed: Boolean(payload.UserConfirmed),
+    destination: payload.CodeDeliveryDetails?.Destination,
+  };
+}
+
+export async function confirmCustomerSignup(email: string, code: string): Promise<void> {
+  if (!customerCognitoConfigured()) {
+    throw new Error("Cognito is not configured for the customer app.");
+  }
+
+  const res = await fetch(`https://cognito-idp.${REGION}.amazonaws.com/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-amz-json-1.1",
+      "X-Amz-Target": "AWSCognitoIdentityProviderService.ConfirmSignUp",
+    },
+    body: JSON.stringify({
+      ClientId: CLIENT_ID!,
+      Username: email,
+      ConfirmationCode: code,
+    }),
+  });
+
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload.message || payload.__type || "Confirmation failed");
+  }
+}
+
+export async function resendCustomerSignupCode(email: string): Promise<void> {
+  if (!customerCognitoConfigured()) {
+    throw new Error("Cognito is not configured for the customer app.");
+  }
+
+  const res = await fetch(`https://cognito-idp.${REGION}.amazonaws.com/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-amz-json-1.1",
+      "X-Amz-Target": "AWSCognitoIdentityProviderService.ResendConfirmationCode",
+    },
+    body: JSON.stringify({
+      ClientId: CLIENT_ID!,
+      Username: email,
+    }),
+  });
+
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload.message || payload.__type || "Could not resend code");
+  }
+}
+
 /** Send the user to Hosted UI's logout endpoint. After logout Cognito
  * redirects back to REDIRECT_URI (or the closest configured logout URL).
  * We don't strictly need this — clearing localStorage works for our SPA —

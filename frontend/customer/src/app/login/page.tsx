@@ -42,7 +42,10 @@ function LoginForm() {
           {busy ? "Redirecting…" : "Continue with Cognito"}
         </button>
         <p className="text-xs text-black/50 mt-4">
-          New customers can register from the same Cognito sign-in page.
+          New here?{" "}
+          <Link href="/register" className="text-accent hover:underline">
+            Create your account in ShopCloud
+          </Link>
         </p>
       </div>
     );
