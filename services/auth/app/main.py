@@ -11,6 +11,7 @@ ADMIN_DEMO_TOKEN = os.getenv("ADMIN_DEMO_TOKEN", "admin-demo-token")
 
 
 @app.get("/demo/login/customer")
+@app.get("/auth/demo/login/customer")
 def customer_login() -> dict:
     return {
         "access_token": CUSTOMER_DEMO_TOKEN,
@@ -21,6 +22,7 @@ def customer_login() -> dict:
 
 
 @app.get("/demo/login/admin")
+@app.get("/auth/demo/login/admin")
 def admin_login() -> dict:
     return {
         "access_token": ADMIN_DEMO_TOKEN,
@@ -31,6 +33,7 @@ def admin_login() -> dict:
 
 
 @app.get("/validate")
+@app.get("/auth/validate")
 def validate(identity: Identity = Depends(require_customer_or_admin)) -> dict:
     return {
         "subject": identity.subject,

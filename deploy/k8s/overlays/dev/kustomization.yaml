@@ -7,6 +7,30 @@ resources:
 patches:
   - path: patch-configmap.yaml
   - target:
+      group: autoscaling
+      version: v2
+      kind: HorizontalPodAutoscaler
+      name: catalog
+    path: delete-hpa-catalog.yaml
+  - target:
+      group: autoscaling
+      version: v2
+      kind: HorizontalPodAutoscaler
+      name: cart
+    path: delete-hpa-cart.yaml
+  - target:
+      group: autoscaling
+      version: v2
+      kind: HorizontalPodAutoscaler
+      name: checkout
+    path: delete-hpa-checkout.yaml
+  - target:
+      group: autoscaling
+      version: v2
+      kind: HorizontalPodAutoscaler
+      name: auth
+    path: delete-hpa-auth.yaml
+  - target:
       group: networking.k8s.io
       version: v1
       kind: Ingress
@@ -48,3 +72,16 @@ images:
   - name: REPLACE_ME/shopcloud/admin
     newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/admin
     newTag: dev-latest
+replicas:
+  - name: customer-web
+    count: 1
+  - name: catalog
+    count: 1
+  - name: cart
+    count: 1
+  - name: checkout
+    count: 1
+  - name: auth
+    count: 1
+  - name: admin
+    count: 1
