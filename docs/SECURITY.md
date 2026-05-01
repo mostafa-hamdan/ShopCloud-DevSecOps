@@ -1,39 +1,41 @@
-# Security Plan
+# Security Notes
 
-## Current local protections
-- No real secrets committed to git
-- Demo auth separated between customer and admin roles
-- Local-only values remain in env files or Compose config
+## Public path
 
-## Cloud security goals
-- Separate Cognito pools for customers and admins
-- Admin MFA when Cognito is enabled
-- Private admin path through Client VPN and internal ALB
-- No public RDS
-- No public Redis
-- S3 block public access
-- Least-privilege IAM and security groups
-- IRSA for workload access to AWS services
-- Secrets Manager for sensitive values
-- SSM Parameter Store for non-secret config
-- KMS-backed encryption where appropriate
+- Public customer traffic uses Route 53, CloudFront, AWS WAF, and the public ALB
+- Customer sign-in uses Amazon Cognito
+- Backend services validate Cognito JWTs for customer-facing APIs
 
-## Container and Kubernetes hardening
-- Non-secret config in ConfigMaps
-- Secret references in deployments, not inline secrets
-- Resource requests and limits
-- Readiness and liveness probes
-- Keep image scan support ready in CI
+## Private admin path
 
-## Deferred but planned
-- Client VPN creation after ACM certificate material is ready
-- Trivy in CI if the baseline pipelines are stable
-- NetworkPolicy only if it does not add avoidable risk late in the deadline
+- Admin traffic is separated from the public path
+- Admin UI is reachable only through AWS Client VPN and the internal ALB
+- Admin Cognito pool exists, but Hosted UI cutover is staged because the private callback currently uses HTTP
+- Admin operations still require app-level authentication
 
-## Current cloud status
-- CloudFront and AWS WAF protect the public customer path.
-- Checkout uses IRSA to publish invoice events to SQS.
-- RDS and Redis are private.
-- S3 invoice bucket blocks public access.
-- Cognito customer/admin pools are provisioned for final architecture evidence; the live demo app remains on local JWT mode for stability.
-- The dev overlay includes a separate internal admin API ingress for the private admin path evidence.
+## Workload and data security
+
+- RDS PostgreSQL is private
+- ElastiCache Redis is private
+- S3 invoice bucket blocks public access
+- Checkout publishes invoice events through SQS using IAM-based access
+- Lambda reads from SQS, writes to S3, and sends email through SES
+
+## Secrets and config
+
+- Local secrets are kept out of Git
+- Terraform state and provider caches are excluded from the repository
+- Secrets Manager / SSM / KMS are represented in the infrastructure plan
+- Kubernetes manifests use secret references instead of committing live cloud secrets
+
+## Additional controls
+
+- Readiness and liveness probes in Kubernetes manifests
+- Resource requests and limits in the workload manifests
+- GitHub Actions pipeline for CI and validation
+- Trivy scan workflow for repository/image security checks
+
+## Known limitations
+
+- SES sandbox still limits invoice delivery to verified recipient emails
+- Admin Cognito cutover needs an HTTPS private callback URL

@@ -1,24 +1,26 @@
 # Demo Script
 
-## Goal
-Show a clean, reliable project narrative without overselling unfinished cloud work.
+## Main URLs
+
+- Public storefront: `https://www.shopcloud312.com`
+- CloudFront fallback: `https://dia46ciw5njau.cloudfront.net`
+- Private admin UI: internal ALB through AWS Client VPN
 
 ## Suggested demo order
-1. Open the live CloudFront storefront: `https://dia46ciw5njau.cloudfront.net`.
-2. Search/filter products and show product images.
-3. Sign in/register with `mmh173@mail.aub.edu` if demonstrating SES email.
-4. Add an item to cart and checkout.
-5. Show the S3 invoice object in `shopcloud-dev-invoices-338078971311/invoices/`.
-6. Show SQS queue depth at zero and Lambda logs.
-7. Show CloudWatch dashboard `shopcloud-dev-dashboard`.
-8. Show WAF `shopcloud-dev-public` attached to CloudFront.
-9. Show Cognito customer/admin pools.
-10. Show internal admin API ingress and explain Client VPN certificate dependency.
-11. Show GitHub Actions CI/CD workflows.
 
-## Demo talking points
-- The app scope is intentionally small so the infrastructure story stays credible.
-- Customer and admin access are already separated in the UI and service boundaries.
-- Invoice flow now uses SQS, Lambda, S3, and SES in AWS.
-- CI validates code, Docker builds, Terraform, and security scanning.
-- CD is manual-gated for ECR push and EKS deploy.
+1. Open `https://www.shopcloud312.com`.
+2. Show customer sign-up and sign-in with Cognito.
+3. Browse products, filter, open a product page, add to wishlist, then add to cart.
+4. Check out using `mmh173@mail.aub.edu` to demonstrate invoice email delivery in SES sandbox.
+5. Show the generated invoice in S3.
+6. Show SQS queue and Lambda logs for the invoice flow.
+7. Show the CloudWatch dashboard and alarms.
+8. Connect through AWS Client VPN and open the private admin UI.
+9. Show product/order management in the admin panel.
+10. Show the GitHub Actions workflows and recent logs.
+
+## Demo notes
+
+- Customer authentication is live on Cognito.
+- Admin Cognito pool exists, but admin login remains on the VPN-protected private path because the current callback URL is HTTP.
+- SES is still in sandbox, so invoice email delivery only works for verified recipient emails.

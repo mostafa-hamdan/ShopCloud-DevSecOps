@@ -1,24 +1,29 @@
-# Monitoring Plan
+# Monitoring Notes
 
-## Local validation
-- Docker Compose health checks for Postgres and Redis
-- Integration tests verify service health endpoints and core flows
+## Implemented monitoring
 
-## AWS monitoring target
-- CloudWatch logs for EKS workloads, Lambda, and ALB access logs where practical
-- CloudWatch metrics and alarms for:
-  - ALB 5xx and unhealthy targets
-  - RDS CPU, storage, and connections
-  - Redis health
-  - Lambda errors and duration
-  - SQS queue depth and DLQ activity
+- CloudWatch logs for the deployed AWS components
+- CloudWatch dashboard for the dev environment
+- CloudWatch alarms for key services
 
-## Dashboard scope
-- Keep the first dashboard simple:
-  - application health summary
-  - invoice pipeline health
-  - database and cache health
+## Monitored areas
 
-## Alerting posture
-- Prefer a few meaningful alarms over a noisy set of low-value alerts
-- Keep monitoring lightweight until the live environment is stable
+- public ALB health and error rates
+- RDS PostgreSQL health metrics
+- ElastiCache Redis health metrics
+- Lambda errors and execution metrics
+- SQS queue depth and DLQ activity
+
+## Demo evidence
+
+During review, the main monitoring evidence is:
+
+- CloudWatch dashboard
+- Lambda log group for invoice generation
+- SQS metrics
+- ALB and target health views
+
+## Notes
+
+- Monitoring is intentionally lightweight and focused on the deployed architecture
+- Prometheus and Grafana were not added because CloudWatch was enough for the course scope and lower risk for the deadline

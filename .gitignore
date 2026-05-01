@@ -35,6 +35,8 @@ runtime/invoices/*
 !runtime/invoices/.gitkeep
 runtime/outbox/*
 !runtime/outbox/.gitkeep
+runtime/client-vpn/
+runtime/cloudfront/
 lambda/**/package/
 
 # OS / editor

@@ -1,135 +1,105 @@
 # ShopCloud
 
-E-commerce platform for the EECE 503Q DevSecOps project.
+ShopCloud is a lightweight e-commerce platform built for a DevSecOps and Infrastructure Automation final project. The project combines a microservice-based application, containerized local development, GitHub Actions automation, Terraform infrastructure, and a live AWS deployment.
 
-Five FastAPI microservices, two Next.js frontends, an async invoice
-worker, and the AWS infrastructure (Terraform + Kubernetes manifests)
-to deploy the whole thing on EKS.
+## Live deployment
 
-## Architecture
+- Public storefront: `https://www.shopcloud312.com`
+- CloudFront domain: `https://dia46ciw5njau.cloudfront.net`
+- Private admin UI: available through AWS Client VPN and the internal ALB
+- GitHub repository: [mostafa-hamdan/ShopCloud-DevSecOps](https://github.com/mostafa-hamdan/ShopCloud-DevSecOps)
 
-Customers reach the storefront over HTTPS through Route 53 → CloudFront
-→ WAF → public ALB → EKS. Admins reach the panel through Client VPN →
-internal ALB → the same EKS cluster, but a separate ingress.
+## Demo credentials
 
-Inside the cluster:
+- Customer Cognito user: `mmh173@mail.aub.edu`
+- Customer password: `ShopCloudDemo123!`
+- Admin user: `admin@shopcloud.example`
+- Admin password: `admin12345`
 
-```
-                       (internal calls; X-Internal-Key header)
-       ┌─────────┐ ◄────────────────────────────────────────────┐
-       │  auth   │                                              │
-       └────┬────┘                                              │
-            │                                                   │
-            │ JWT verify (HS256 dev / Cognito RS256 prod)       │
-            ▼                                                   │
-   ┌─────────────────┬─────────────────┬─────────────────┐      │
-   │     catalog     │      cart       │     checkout    │ ◄────┘
-   │  (products,     │  (Redis cart    │  (orders,       │   admin
-   │   reviews,      │   + wishlist)   │   returns)      │  (proxy)
-   │   stock)        │                 │                 │
-   └─────────────────┴─────────────────┴────────┬────────┘
-                                                │
-                                                ▼  publish
-                                    SQS (or local file in dev)
-                                                │
-                                                ▼
-                                    invoice-worker
-                                    ↓ render PDF
-                                    ↓ upload to S3
-                                    ↓ email via SES
-```
+## Final architecture
 
-Both the auth path (HS256/Cognito) and the queue/storage/mail path
-(local files / SQS+S3+SES) are env-toggle. Local dev runs everything
-in containers; prod flips a few env vars to use AWS-managed services.
+Customer path:
 
-## Layout
+`Route 53 -> CloudFront -> AWS WAF -> public ALB -> EKS`
 
-```
-services/
-  auth/            FastAPI (port 8004) — customer + admin pools, profile, addresses
-  catalog/         FastAPI (port 8001) — products, categories, reviews, atomic stock
-  cart/            FastAPI (port 8002) — Redis-backed cart + wishlist
-  checkout/        FastAPI (port 8003) — orders, returns, async invoice publish
-  admin/           FastAPI (port 8005) — orchestration over auth/catalog/checkout
-  invoice-worker/  Worker — queue consumer, PDF render, S3 upload, SES email
-shared/
-  pyshared/        JWT, DB, internal-key, structured logging, retry HTTP client,
-                   rate limiter, queue (SQS|local), mail (SES|local)
-frontend/
-  customer/        Next.js storefront (port 3000)
-  admin/           Next.js admin panel (port 3001)
-lambda/
-  invoice_generator/  AWS Lambda packaging of the invoice worker for prod
-infra/terraform/
-  envs/{dev,prod}/   Per-environment entrypoints
-  modules/           VPC, EKS, RDS, Redis, S3, SQS, Lambda, Cognito, ECR,
-                     IRSA, Client VPN, edge (CloudFront + WAF + R53), monitoring
-deploy/k8s/
-  base/              Deployments, Services, ConfigMap, ingresses, HPAs
-  overlays/{dev,prod}  Per-environment patches
-tests/
-  test_auth.py, test_catalog.py, test_cart.py, test_checkout.py
-                     In-process pytest suite (sqlite + fakeredis + respx)
-  test_api.py        Live integration tests run against docker compose
-.github/workflows/
-  ci.yml, docker-build.yml, terraform-validate.yml, trivy.yml
-docs/
-  ARCHITECTURE.md, DEPLOYMENT_PLAN.md, AWS_STAGE_1_2_CHECKLIST.md,
-  COST_NOTES.md, MONITORING.md, SECURITY.md, ROLLBACK.md
-```
+Admin path:
 
-## Running locally
+`AWS Client VPN -> internal ALB -> EKS`
 
-You need Docker Desktop, Node.js 20+, and Python 3.11+.
+Core services in EKS:
 
-### One-time frontend setup
+- `catalog`: products, categories, reviews, stock
+- `cart`: Redis-backed cart and wishlist
+- `checkout`: orders, returns, invoice event publishing
+- `auth`: local/demo auth and profile support
+- `admin`: admin API over catalog/auth/checkout
+
+Supporting AWS services:
+
+- Amazon ECR
+- Amazon EKS
+- Amazon RDS PostgreSQL
+- Amazon ElastiCache Redis
+- Amazon SQS
+- AWS Lambda
+- Amazon S3
+- Amazon SES
+- Amazon Cognito
+- Amazon CloudWatch
+- Route 53, CloudFront, AWS WAF
+- AWS Client VPN
+
+## What is automated
+
+- Dockerfiles for services and frontends
+- Docker Compose for local development
+- Terraform modules for the required AWS components
+- Kubernetes manifests and overlays for deployment to EKS
+- GitHub Actions for CI, image build/push, Terraform validation, deploy workflow, and security scanning
+
+## How services communicate
+
+- `customer-web` calls `catalog`, `cart`, and `checkout` through the public ingress
+- `admin-web` calls the private admin API through the internal ingress
+- `admin` orchestrates admin actions across `catalog`, `auth`, and `checkout`
+- `cart` stores cart and wishlist state in Redis and reads product data from `catalog`
+- `checkout` stores orders in PostgreSQL and publishes invoice events to SQS
+- Lambda consumes SQS messages, generates PDF invoices, stores them in S3, and sends them through SES
+
+## Authentication status
+
+- Customer Cognito is live on the public storefront
+- Admin Cognito pool exists, but Hosted UI cutover is staged because the current private admin callback URL is HTTP
+- Admin access is currently protected by AWS Client VPN, the internal ALB, and app-level admin authentication
+
+## Local development
+
+Requirements:
+
+- Docker Desktop
+- Node.js 20+
+- Python 3.11+
+
+Start locally:
 
 ```powershell
-# PowerShell
-cd frontend\customer
-npm install
-cd ..\admin
-npm install
-cd ..\..
-```
-
-```bash
-# bash / WSL / Git Bash / Linux / macOS
-(cd frontend/customer && npm install)
-(cd frontend/admin && npm install)
-```
-
-### Bring up the stack
-
-```powershell
-# PowerShell
-Copy-Item .env.example .env   # adjust JWT_SECRET / INTERNAL_API_KEY if you like
+Copy-Item .env.example .env
 docker compose up --build -d
 ```
 
-```bash
-cp .env.example .env
-docker compose up --build -d
-```
+Local URLs:
 
-Service URLs:
-
-| Service          | URL                          |
-|------------------|------------------------------|
-| Catalog          | http://localhost:8001        |
-| Cart             | http://localhost:8002        |
-| Checkout         | http://localhost:8003        |
-| Auth             | http://localhost:8004        |
-| Admin            | http://localhost:8005        |
-| Customer web     | http://localhost:3000        |
-| Admin web        | http://localhost:3001        |
-
-Bootstrap admin login: `admin@shopcloud.example` / `admin12345`.
+- Customer web: `http://localhost:3000`
+- Admin web: `http://localhost:3001`
+- Catalog: `http://localhost:8001`
+- Cart: `http://localhost:8002`
+- Checkout: `http://localhost:8003`
+- Auth: `http://localhost:8004`
+- Admin API: `http://localhost:8005`
 
 ## Tests
 
-### In-process (fast — runs in seconds, no docker)
+Quick tests:
 
 ```powershell
 pip install -r requirements-dev.txt
@@ -140,115 +110,49 @@ foreach ($s in "auth","catalog","cart","checkout") {
 pytest -q
 ```
 
-```bash
-pip install -r requirements-dev.txt
-pip install -e shared/
-for s in auth catalog cart checkout; do
-  pip install -r services/$s/requirements.txt
-done
-pytest -q
-```
+Docker integration tests:
 
-38 tests; runs in ~12s.
-
-### Live integration (against docker-compose'd stack)
-
-```bash
+```powershell
 docker compose up -d postgres redis catalog cart checkout auth admin invoice-worker
 docker compose --profile test run --rm tests
 ```
 
-Exercises the same flows over the network: registration, login,
-add-to-cart, checkout, refund-restock, admin product creation.
+## GitHub Actions
 
-## Cloud deployment (AWS)
+- `ci.yml`: tests, Compose validation, Docker build checks
+- `terraform-validate.yml`: `fmt`, `init`, `validate`
+- `docker-build.yml`: manual ECR image build and push
+- `deploy-dev.yml`: manual EKS deployment
+- `trivy.yml`: scan support for the repository and images
 
-The Terraform code is **gated** — every module defaults to `enabled = false`
-so a fresh checkout costs nothing. See `docs/DEPLOYMENT_PLAN.md` for the
-8-stage rollout. Read `COST_NOTES.md` before any `terraform apply`.
+## What remains for a fuller production setup
 
-Current live dev environment:
+- Admin Cognito Hosted UI needs an HTTPS private callback URL
+- SES is still in sandbox, so invoice emails only reach verified recipient emails
+- RDS and Redis are deployed in cost-aware dev mode, not Multi-AZ production mode
+- Cross-region disaster recovery is documented but not enabled
 
-| Component | Value |
-| --- | --- |
-| Region | `us-east-1` |
-| EKS cluster | `shopcloud-dev` |
-| Public HTTPS URL | `https://dia46ciw5njau.cloudfront.net` |
-| Public ALB | `k8s-publicshopcloud-c9b58cfdd0-112985133.us-east-1.elb.amazonaws.com` |
-| Internal admin ALB | `internal-k8s-internaladmin-50c598b1ca-1815347815.us-east-1.elb.amazonaws.com` |
-| CloudWatch dashboard | `shopcloud-dev-dashboard` |
-| Cognito customer pool | `us-east-1_ML4GVS8pk` |
-| Cognito admin pool | `us-east-1_UullAvJJ1` |
+## Professor review map
 
-The toggles to flip when going live:
+Useful files:
 
-```hcl
-# infra/terraform/envs/dev/terraform.tfvars
-enable_networking  = true
-enable_ecr         = true
-enable_eks         = true
-enable_rds         = true
-enable_redis       = true
-enable_s3          = true
-enable_sqs         = true
-enable_lambda      = true
-enable_cognito     = true
-enable_monitoring  = true
-enable_edge        = true   # CloudFront + WAF + Route 53
-enable_client_vpn  = true   # admin VPN
-```
+- `docs/DEMO_SCRIPT.md`
+- `docs/DEPLOYMENT_PLAN.md`
+- `docs/SECURITY.md`
+- `docs/MONITORING.md`
+- `docs/ROLLBACK.md`
+- `docs/COGNITO_CUTOVER.md`
+- `COST_NOTES.md`
 
-Then in the prod overlay configmap, set `JWT_VERIFIER=cognito`,
-`QUEUE_BACKEND=sqs`, `STORAGE_BACKEND=s3`, `MAIL_BACKEND=ses`. The
-service code already handles both paths — no code change needed.
+Useful implementation folders:
 
-## CI/CD
+- `.github/workflows/`
+- `infra/terraform/`
+- `deploy/k8s/`
+- `services/`
+- `frontend/customer/`
+- `frontend/admin/`
 
-GitHub Actions workflows:
+## Cleanup note
 
-| Workflow | Purpose |
-| --- | --- |
-| `ci.yml` | Unit tests, Compose validation, integration tests, Docker build checks |
-| `terraform-validate.yml` | Terraform fmt/init/validate |
-| `trivy.yml` | Filesystem vulnerability scan |
-| `docker-build.yml` | Manual ECR image build/push |
-| `deploy-dev.yml` | Manual EKS dev deployment |
-
-Deployment remains manually triggered for cost control and demo stability.
-
-## Reading order for the curious
-
-1. `docs/ARCHITECTURE.md` — what the cloud topology looks like
-2. `services/checkout/main.py` — the most complex flow (cross-service,
-   atomic stock decrement, async pipeline)
-3. `shared/pyshared/auth.py` — how Cognito two-pool verification works
-4. `shared/pyshared/observability.py` + `http_client.py` — request-IDs
-   and retry behaviour
-5. `tests/test_checkout.py` — end-to-end contract tests
-6. `infra/terraform/envs/dev/main.tf` — module wiring
-7. `deploy/k8s/base/` — Kubernetes manifests
-
-## Known limitations
-
-- `pyshared.queue.LocalConsumer` is not crash-safe — it tracks
-  processed message IDs in a sibling `.done` file but doesn't fsync.
-  Acceptable for dev. The SQS backend uses real visibility timeouts.
-- Single shared Postgres database for all services (cost-driven choice
-  for dev; in prod each service can move to its own DB by changing the
-  `DATABASE_URL` per service in the secrets bundle and provisioning
-  more RDS instances in `infra/terraform/modules/rds/`).
-- `lambda/invoice_generator/` and `services/invoice-worker/` are two
-  packagings of the same logical worker — Lambda for prod, container for
-  dev. Their code currently diverges; could be unified later.
-
-## Security notes for the demo
-
-- Bcrypt password hashing
-- Constant-time internal-key comparison (`secrets.compare_digest`)
-- JWT pool enforcement: a customer token can't call admin routes and
-  vice versa (`tests/test_auth.py::test_admin_token_cannot_use_customer_routes`)
-- Login rate-limited to 10 attempts / IP / minute
-- Atomic stock decrement with `SELECT ... FOR UPDATE` row locks
-  (test: `tests/test_catalog.py::test_stock_decrement_atomic`)
-- Internal endpoints sit behind security groups in prod; the `X-Internal-Key`
-  header is a defence-in-depth secondary control.
+The live dev environment uses paid AWS services. Review `COST_NOTES.md` and `docs/ROLLBACK.md` before cleanup, and do not run Terraform changes without reviewing impact first.

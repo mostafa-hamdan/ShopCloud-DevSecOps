@@ -1,55 +1,42 @@
 # COST_NOTES
 
-AWS resources are now running for the dev demo environment. Do not leave them running after the demo unless we intentionally accept the cost.
+AWS resources are live in the dev environment. Keep only what is needed for the demo and clean up after grading.
 
-| Service | Purpose | Cost risk | Cheaper alternative | When to create | Can destroy after demo? |
+| Service | Purpose | Cost risk | Cheaper alternative | Current state | Can destroy after demo? |
 | --- | --- | --- | --- | --- | --- |
-| Amazon ECR | Store application images for EKS deployments | Low | Local Docker images only | Stage 2 | No |
-| Amazon EKS | Required managed Kubernetes platform | Medium to High | Docker Compose only during local phase | Stage 3 | Yes |
-| NAT Gateway | Private subnet egress for cloud workloads | High for its value in short demos | Keep disabled at first if architecture/staging allows | Stage 3 or 4 only if truly needed | Yes |
-| Public ALB | Public ingress into EKS | Medium | None for final architecture | Stage 3 | Yes |
-| Internal ALB | Private admin ingress into EKS | Medium | Defer until admin path is ready | Stage 6 | Yes |
-| Route 53 | DNS and latency-based routing | Low to Medium | Start without custom DNS | Stage 7 | Yes |
-| CloudFront | Global distribution and performance story | Medium | Direct ALB access during early testing | Stage 7 | Yes |
-| AWS WAF | Public path protection | Medium | Defer until public ingress is stable | Stage 7 | Yes |
-| AWS Shield Standard | Included baseline protection | Low | N/A | Stage 7 | No |
-| VPC and subnets | Foundation for all private cloud resources | Medium | Minimal single-environment design | Stage 3 | Partially |
-| RDS PostgreSQL | Required transactional database | Medium | Local Postgres only before cloud | Stage 4 | Yes |
-| RDS Multi-AZ | HA requirement for final architecture | Higher | Single-AZ first for the first live cut | Later after approval | Yes |
-| Cross-region read replica | DR and architecture bonus | Higher | Document first, defer implementation | Last or optional | Yes |
-| ElastiCache Redis | Required managed cache/cart layer | Medium | Local Redis only before cloud | Stage 4 | Yes |
-| Redis Multi-AZ | HA for cache layer | Higher | Single-node/cheaper setup first | Later after approval | Yes |
-| S3 | Store invoice PDFs and artifacts | Low | Local filesystem during MVP | Stage 5 | Yes |
-| SQS | Async checkout event queue | Low | Local file-based event handoff | Stage 5 | Yes |
-| DLQ | Capture failed invoice events | Low | Manual retries only | Stage 5 if stable | Yes |
-| Lambda | Invoice generation worker | Low | Local invoice worker | Stage 5 | Yes |
-| SES | Send invoice emails | Low to Medium | Local outbox mock | Stage 5 | Yes |
-| Cognito customer pool | Customer auth and JWT issuance | Low to Medium | Local demo auth until cloud | Stage 1 or 4 | Yes |
-| Cognito admin pool | Separate admin auth with MFA | Low to Medium | Local demo auth until cloud | Stage 1 or 6 | Yes |
-| AWS Client VPN | Required private admin path | Medium | Defer until public path is stable | Stage 6 | Yes |
-| Secrets Manager | Store sensitive application secrets | Low to Medium | Temporary local env files only for local dev | Stage 1 | No |
-| SSM Parameter Store | Store non-secret config | Low | Local config files only during MVP | Stage 1 | No |
-| KMS | Encrypt data and secrets | Low to Medium | AWS-managed keys where acceptable | Stage 1 or 4 | No |
-| CloudWatch | Logs, metrics, alarms, and dashboard | Low to Medium | Minimal default logs only | Stage 8 | No |
-| Trivy in CI | Image and filesystem scanning | Low | Skip until CI is stable | After CI baseline | No |
+| Amazon ECR | Store container images | Low | Local images only | Live | No |
+| Amazon EKS | Managed Kubernetes platform | Medium to High | Docker Compose only | Live | Yes |
+| Public ALB | Customer ingress into EKS | Medium | None for final architecture | Live | Yes |
+| Internal ALB | Private admin ingress | Medium | Defer admin path | Live | Yes |
+| Route 53 | Custom DNS | Low to Medium | CloudFront default domain only | Live | Yes |
+| CloudFront | Public HTTPS delivery | Medium | Direct ALB for testing only | Live | Yes |
+| AWS WAF | Public path protection | Medium | None if only testing | Live | Yes |
+| VPC and subnets | Base networking | Medium | None | Live | Partially |
+| RDS PostgreSQL | Transactional data store | Medium | Local Postgres only | Live | Yes |
+| ElastiCache Redis | Cart and wishlist cache | Medium | Local Redis only | Live | Yes |
+| S3 | Invoice storage | Low | Local filesystem only | Live | Yes |
+| SQS | Invoice queue | Low | Local queue only | Live | Yes |
+| Lambda | Invoice processing | Low | Local worker only | Live | Yes |
+| SES | Invoice email | Low | Local outbox only | Live, sandbox mode | Yes |
+| Cognito customer pool | Public customer authentication | Low to Medium | Local auth only | Live | Yes |
+| Cognito admin pool | Separate admin identity boundary | Low to Medium | Local admin auth only | Created, not activated | Yes |
+| AWS Client VPN | Private admin access | Medium | Not acceptable for final architecture | Live | Yes |
+| CloudWatch | Logs, dashboard, alarms | Low to Medium | Minimal default logs only | Live | No |
 
-## Cost-sensitive defaults
-- Default AWS region: `us-east-1`
-- First live environment only: `dev`
-- Defer `prod`, Multi-AZ, Client VPN, WAF, CloudFront, and Route 53 until the application path is stable
-- Always review the cheaper alternative before provisioning any medium or high cost item
+## Important cost notes
 
-## Current running dev resources
-- EKS cluster `shopcloud-dev` with two `t3.small` nodes.
-- Public ALB for customer traffic.
-- RDS PostgreSQL `db.t3.micro`, single-AZ.
-- ElastiCache Redis `cache.t4g.micro`, single-node.
-- SQS invoice queue and DLQ.
-- Lambda invoice generator.
-- Private S3 invoice bucket `shopcloud-dev-invoices-338078971311`.
-- SES sandbox sending from `mmh173@mail.aub.edu`.
+- Highest active cost items are EKS, the ALBs, RDS, Redis, CloudFront, and Client VPN.
+- SES is still in sandbox, so invoice emails only reach verified recipient emails.
+- The environment is intentionally a single dev environment, not a full production setup.
+- RDS and Redis are deployed in cost-aware dev mode rather than full HA mode.
 
-## Current cost warning
-- Highest active cost drivers are EKS, the worker nodes, ALB, RDS, and ElastiCache.
-- SQS, Lambda, S3, and SES should remain low for demo volume.
-- Destroy the dev stack after grading/demo if we do not need it running.
+## Cleanup reminder
+
+Before cleanup, review:
+
+- `docs/ROLLBACK.md`
+- current EKS workloads
+- current ALBs
+- RDS and Redis instances
+- CloudFront and WAF resources
+- Client VPN endpoint
