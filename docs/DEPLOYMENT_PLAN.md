@@ -51,6 +51,7 @@ No AWS provisioning should happen without explicit approval for the current stag
   - production environment
   - RDS, ElastiCache, internal admin ALB, Client VPN, CloudFront, WAF, and Route 53
 - Approval checkpoint: approve estimated EKS, node, ALB, and networking cost before any Terraform apply
+- Current status: complete for dev. Public ALB is live at `k8s-publicshopcloud-c9b58cfdd0-112985133.us-east-1.elb.amazonaws.com`.
 
 ## Stage 4: RDS and Redis integration
 - Create:
@@ -64,6 +65,7 @@ No AWS provisioning should happen without explicit approval for the current stag
   - Redis Multi-AZ
   - cross-region read replica
 - Approval checkpoint: approve DB/cache instance sizes, single-AZ vs Multi-AZ, and destroy-after-demo plan
+- Current status: complete for dev with cost-aware single-AZ RDS PostgreSQL and single-node ElastiCache Redis. Temporary in-cluster Postgres/Redis were removed after verification.
 
 ## Stage 5: SQS, Lambda, S3, and SES invoice pipeline
 - Create:
@@ -77,6 +79,8 @@ No AWS provisioning should happen without explicit approval for the current stag
   - DLQ alarms if monitoring is not ready
   - SES production access request
 - Approval checkpoint: approve SES identities, bucket name, queue names, and Lambda packaging approach
+- Current status: complete for dev. Checkout publishes to SQS through IRSA, Lambda renders PDF invoices, uploads them to the private S3 bucket, and sends through SES sandbox.
+- Demo note: SES sandbox requires the checkout customer email to be verified. Use `mmh173@mail.aub.edu` for invoice email success during demo.
 
 ## Stage 6: Internal ALB and Client VPN private admin path
 - Create:

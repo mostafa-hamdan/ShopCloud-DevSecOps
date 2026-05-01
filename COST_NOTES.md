@@ -1,6 +1,6 @@
 # COST_NOTES
 
-All cloud creation remains deferred until explicit approval.
+AWS resources are now running for the dev demo environment. Do not leave them running after the demo unless we intentionally accept the cost.
 
 | Service | Purpose | Cost risk | Cheaper alternative | When to create | Can destroy after demo? |
 | --- | --- | --- | --- | --- | --- |
@@ -38,3 +38,18 @@ All cloud creation remains deferred until explicit approval.
 - First live environment only: `dev`
 - Defer `prod`, Multi-AZ, Client VPN, WAF, CloudFront, and Route 53 until the application path is stable
 - Always review the cheaper alternative before provisioning any medium or high cost item
+
+## Current running dev resources
+- EKS cluster `shopcloud-dev` with two `t3.small` nodes.
+- Public ALB for customer traffic.
+- RDS PostgreSQL `db.t3.micro`, single-AZ.
+- ElastiCache Redis `cache.t4g.micro`, single-node.
+- SQS invoice queue and DLQ.
+- Lambda invoice generator.
+- Private S3 invoice bucket `shopcloud-dev-invoices-338078971311`.
+- SES sandbox sending from `mmh173@mail.aub.edu`.
+
+## Current cost warning
+- Highest active cost drivers are EKS, the worker nodes, ALB, RDS, and ElastiCache.
+- SQS, Lambda, S3, and SES should remain low for demo volume.
+- Destroy the dev stack after grading/demo if we do not need it running.
