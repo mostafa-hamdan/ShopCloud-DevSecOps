@@ -59,7 +59,7 @@ patches:
 images:
   - name: REPLACE_ME/shopcloud/customer-web
     newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/frontend
-    newTag: customer-cognito-login-register-fix
+    newTag: customer-wishlist-state-fix
   - name: REPLACE_ME/shopcloud/admin-web
     newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/frontend
     newTag: admin-web-62d4d00-uxfix

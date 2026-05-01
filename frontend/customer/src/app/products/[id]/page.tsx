@@ -18,6 +18,7 @@ export default function ProductPage() {
   const [busy, setBusy] = useState(false);
   const [added, setAdded] = useState(false);
   const [wishBusy, setWishBusy] = useState(false);
+  const [wishlisted, setWishlisted] = useState(false);
 
   const loadReviews = useCallback(async () => {
     if (!params?.id) return;
@@ -32,6 +33,16 @@ export default function ProductPage() {
     loadReviews();
   }, [params?.id, loadReviews]);
 
+  useEffect(() => {
+    if (!token || !params?.id) {
+      setWishlisted(false);
+      return;
+    }
+    wishlistApi.get(token)
+      .then((data) => setWishlisted(data.items.some((item) => item.product_id === params.id)))
+      .catch(() => { /* non-fatal */ });
+  }, [token, params?.id]);
+
   async function addToCart() {
     if (!token) { router.push(`/login?next=/products/${params?.id}`); return; }
     if (!product) return;
@@ -44,14 +55,21 @@ export default function ProductPage() {
     } finally { setBusy(false); }
   }
 
-  async function addToWishlist() {
+  async function toggleWishlist() {
     if (!token) { router.push(`/login?next=/products/${params?.id}`); return; }
     if (!product) return;
     setWishBusy(true);
+    setError(null);
     try {
-      await wishlistApi.add(token, product.id);
+      if (wishlisted) {
+        await wishlistApi.remove(token, product.id);
+        setWishlisted(false);
+      } else {
+        await wishlistApi.add(token, product.id);
+        setWishlisted(true);
+      }
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Failed to add to wishlist");
+      setError(e instanceof Error ? e.message : "Failed to update wishlist");
     } finally { setWishBusy(false); }
   }
 
@@ -111,11 +129,15 @@ export default function ProductPage() {
               {busy ? "Adding…" : added ? "Added — add another?" : "Add to cart"}
             </button>
             <button
-              onClick={addToWishlist}
+              onClick={toggleWishlist}
               disabled={wishBusy}
-              className="px-5 py-2.5 border border-black/15 rounded hover:border-accent disabled:opacity-50"
+              className={`px-5 py-2.5 rounded disabled:opacity-50 ${
+                wishlisted
+                  ? "bg-emerald-50 border border-emerald-600 text-emerald-700 hover:bg-emerald-100"
+                  : "border border-black/15 hover:border-accent"
+              }`}
             >
-              ♡ Wishlist
+              {wishBusy ? "Saving..." : wishlisted ? "In wishlist" : "Add to wishlist"}
             </button>
           </div>
 
