@@ -54,7 +54,7 @@ patches:
 images:
   - name: REPLACE_ME/shopcloud/customer-web
     newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/frontend
-    newTag: 3d340bd
+    newTag: "37626e4"
   - name: REPLACE_ME/shopcloud/catalog
     newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/catalog
     newTag: 3d340bd
