@@ -64,11 +64,13 @@ export default function ProductPage() {
     <div className="space-y-12">
       <div className="grid md:grid-cols-2 gap-8">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={product.image_url}
-          alt={product.name}
-          className="w-full rounded border border-black/10 object-cover aspect-[4/3]"
-        />
+        <div className="aspect-[4/3] rounded border border-black/10 bg-[#f7f5f0] flex items-center justify-center overflow-hidden">
+          <img
+            src={product.image_url}
+            alt={product.name}
+            className="h-full w-full object-contain p-5"
+          />
+        </div>
         <div>
           <p className="text-sm text-black/50">{product.category?.name ?? "—"}</p>
           <h1 className="text-3xl font-semibold mt-1">{product.name}</h1>

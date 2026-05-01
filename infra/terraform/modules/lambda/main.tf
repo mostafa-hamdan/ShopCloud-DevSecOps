@@ -47,14 +47,14 @@ resource "aws_iam_role_policy" "this" {
 }
 
 resource "aws_lambda_function" "this" {
-  count         = var.enabled ? 1 : 0
-  function_name = var.function_name
-  role          = aws_iam_role.this[0].arn
-  handler       = "handler.lambda_handler"
-  runtime       = "python3.12"
-  filename      = var.package_file
+  count            = var.enabled ? 1 : 0
+  function_name    = var.function_name
+  role             = aws_iam_role.this[0].arn
+  handler          = "handler.lambda_handler"
+  runtime          = "python3.12"
+  filename         = var.package_file
   source_code_hash = filebase64sha256(var.package_file)
-  timeout       = 30
+  timeout          = 30
 
   environment {
     variables = {

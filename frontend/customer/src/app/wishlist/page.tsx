@@ -65,8 +65,13 @@ export default function WishlistPage() {
           >
             <Link href={`/products/${item.product_id}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={item.image_url} alt={item.name}
-                   className="w-full aspect-[3/2] object-cover" />
+              <div className="aspect-[3/2] bg-[#f7f5f0] border-b border-black/5 flex items-center justify-center">
+                <img
+                  src={item.image_url}
+                  alt={item.name}
+                  className="h-full w-full object-contain p-3"
+                />
+              </div>
             </Link>
             <div className="p-3 flex-1 flex flex-col">
               <Link href={`/products/${item.product_id}`}

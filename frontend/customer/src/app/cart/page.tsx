@@ -73,8 +73,9 @@ export default function CartPage() {
         {cart.items.map((line) => (
           <div key={line.product_id} className="flex gap-4 p-4 items-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={line.image_url} alt={line.name}
-                 className="w-20 h-20 object-cover rounded border border-black/10" />
+            <div className="w-20 h-20 bg-[#f7f5f0] rounded border border-black/10 flex items-center justify-center shrink-0">
+              <img src={line.image_url} alt={line.name} className="max-w-full max-h-full object-contain p-1" />
+            </div>
             <div className="flex-1">
               <p className="font-medium">{line.name}</p>
               <p className="text-sm text-black/60">

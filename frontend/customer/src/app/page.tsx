@@ -84,7 +84,13 @@ export default function HomePage() {
             className="group bg-white border border-black/10 rounded overflow-hidden hover:border-accent transition-colors"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={p.image_url} alt={p.name} className="w-full aspect-[3/2] object-cover" />
+            <div className="aspect-[3/2] bg-[#f7f5f0] border-b border-black/5 flex items-center justify-center">
+              <img
+                src={p.image_url}
+                alt={p.name}
+                className="h-full w-full object-contain p-3 transition-transform duration-200 group-hover:scale-[1.03]"
+              />
+            </div>
             <div className="p-3">
               <p className="text-sm text-black/50">{p.category?.name ?? "-"}</p>
               <h3 className="font-medium leading-tight group-hover:text-accent">{p.name}</h3>
