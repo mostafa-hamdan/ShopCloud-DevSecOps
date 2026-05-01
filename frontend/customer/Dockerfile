@@ -7,6 +7,6 @@ FROM node:20-alpine AS dev
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY frontend/customer/ ./
-ENV NODE_ENV=development
+ENV NODE_ENV=development NEXT_TELEMETRY_DISABLED=1
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
