@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
 export default function RegisterPage() {
-  const { register } = useAuth();
+  const { register, authMode } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,14 +14,45 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  if (authMode === "cognito") {
+    // Cognito's Hosted UI shows sign-up alongside sign-in on the same
+    // page, so we just redirect there. No need for a separate registration
+    // form — Cognito handles email verification, password rules, etc.
+    async function startCognito() {
+      setBusy(true); setError(null);
+      try {
+        await register();
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to start Cognito");
+        setBusy(false);
+      }
+    }
+    return (
+      <div className="max-w-md mx-auto bg-white border border-black/10 rounded p-6">
+        <h1 className="text-2xl font-semibold mb-1">Create your account</h1>
+        <p className="text-sm text-black/60 mb-5">
+          Account creation is handled by AWS Cognito. You will be redirected to its
+          sign-up page.
+        </p>
+        {error && <p className="text-red-700 text-sm mb-3">{error}</p>}
+        <button
+          onClick={startCognito}
+          disabled={busy}
+          className="w-full px-4 py-2.5 bg-ink text-white rounded hover:bg-black disabled:bg-black/30"
+        >
+          {busy ? "Redirecting…" : "Continue with Cognito"}
+        </button>
+      </div>
+    );
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (password.length < 8) {
       setError("Password must be at least 8 characters.");
       return;
     }
-    setBusy(true);
-    setError(null);
+    setBusy(true); setError(null);
     try {
       await register(email, password, fullName);
       router.push("/");
@@ -43,9 +74,7 @@ export default function RegisterPage() {
         <div>
           <label className="block text-sm mb-1" htmlFor="name">Full name</label>
           <input
-            id="name"
-            type="text"
-            value={fullName}
+            id="name" type="text" value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             className="w-full px-3 py-2 border border-black/15 rounded bg-white focus:outline-none focus:border-accent"
           />
@@ -53,10 +82,7 @@ export default function RegisterPage() {
         <div>
           <label className="block text-sm mb-1" htmlFor="email">Email</label>
           <input
-            id="email"
-            type="email"
-            required
-            value={email}
+            id="email" type="email" required value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full px-3 py-2 border border-black/15 rounded bg-white focus:outline-none focus:border-accent"
           />
@@ -64,11 +90,7 @@ export default function RegisterPage() {
         <div>
           <label className="block text-sm mb-1" htmlFor="password">Password</label>
           <input
-            id="password"
-            type="password"
-            required
-            minLength={8}
-            value={password}
+            id="password" type="password" required minLength={8} value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-3 py-2 border border-black/15 rounded bg-white focus:outline-none focus:border-accent"
           />

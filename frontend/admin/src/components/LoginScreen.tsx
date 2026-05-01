@@ -4,16 +4,49 @@ import { useState } from "react";
 import { useAdminAuth } from "@/lib/auth-context";
 
 export default function LoginScreen() {
-  const { login } = useAdminAuth();
+  const { login, authMode } = useAdminAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  if (authMode === "cognito") {
+    async function startCognito() {
+      setBusy(true); setError(null);
+      try {
+        await login();
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to start Cognito sign-in");
+        setBusy(false);
+      }
+    }
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="w-full max-w-sm bg-white rounded shadow-lg p-8">
+          <p className="text-xs uppercase tracking-widest text-black/50">ShopCloud</p>
+          <h1 className="text-2xl font-semibold mt-1 mb-2">Admin sign in</h1>
+          <p className="text-sm text-black/60 mb-5">
+            Authenticate via AWS Cognito. MFA may be required.
+          </p>
+          {error && <p className="text-red-700 text-sm mb-3">{error}</p>}
+          <button
+            onClick={startCognito}
+            disabled={busy}
+            className="w-full px-4 py-2.5 bg-accent text-white rounded hover:bg-blue-800 disabled:bg-black/30"
+          >
+            {busy ? "Redirecting…" : "Continue with Cognito"}
+          </button>
+          <p className="mt-4 text-xs text-black/50">
+            Internal access only. Customer accounts cannot sign in here.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setBusy(true);
-    setError(null);
+    setBusy(true); setError(null);
     try {
       await login(email, password);
     } catch (err: unknown) {
@@ -32,10 +65,7 @@ export default function LoginScreen() {
           <div>
             <label className="block text-sm mb-1" htmlFor="e">Email</label>
             <input
-              id="e"
-              type="email"
-              required
-              value={email}
+              id="e" type="email" required value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 border border-black/15 rounded focus:outline-none focus:border-accent"
             />
@@ -43,10 +73,7 @@ export default function LoginScreen() {
           <div>
             <label className="block text-sm mb-1" htmlFor="p">Password</label>
             <input
-              id="p"
-              type="password"
-              required
-              value={password}
+              id="p" type="password" required value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-3 py-2 border border-black/15 rounded focus:outline-none focus:border-accent"
             />
