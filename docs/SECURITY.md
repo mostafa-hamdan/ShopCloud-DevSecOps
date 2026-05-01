@@ -36,3 +36,4 @@
 - RDS and Redis are private.
 - S3 invoice bucket blocks public access.
 - Cognito customer/admin pools are provisioned for final architecture evidence; the live demo app remains on local JWT mode for stability.
+- The dev overlay includes a separate internal admin API ingress for the private admin path evidence.

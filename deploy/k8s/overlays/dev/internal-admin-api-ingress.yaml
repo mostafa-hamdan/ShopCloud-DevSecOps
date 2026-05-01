@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: internal-admin-api
+  namespace: shopcloud
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internal
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/group.name: internal-admin
+spec:
+  rules:
+    - host: admin-api.shopcloud.internal
+      http:
+        paths:
+          - path: /admin
+            pathType: Prefix
+            backend:
+              service:
+                name: admin
+                port:
+                  number: 8005
+          - path: /auth/admin
+            pathType: Prefix
+            backend:
+              service:
+                name: auth
+                port:
+                  number: 8004
