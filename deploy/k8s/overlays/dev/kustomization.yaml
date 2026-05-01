@@ -2,8 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base
-  - stage3-secret.yaml
-  - temporary-postgres-redis.yaml
 patches:
   - path: patch-configmap.yaml
   - target:
@@ -56,13 +54,13 @@ patches:
 images:
   - name: REPLACE_ME/shopcloud/customer-web
     newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/frontend
-    newTag: dev-latest
+    newTag: 3d340bd
   - name: REPLACE_ME/shopcloud/catalog
     newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/catalog
-    newTag: dev-latest
+    newTag: 3d340bd
   - name: REPLACE_ME/shopcloud/cart
     newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/cart
-    newTag: dev-latest
+    newTag: 3d340bd
   - name: REPLACE_ME/shopcloud/checkout
     newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/checkout
     newTag: dev-latest
