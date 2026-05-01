@@ -126,7 +126,7 @@ export const products = {
   list: async (token: string, q?: string) => {
     const p = new URLSearchParams();
     if (q) p.set("q", q);
-    p.set("limit", "200");
+    p.set("limit", "100");
     const data = await request<unknown>(`${ADMIN}/products?${p}`, {}, token);
     return expectProductList(data);
   },

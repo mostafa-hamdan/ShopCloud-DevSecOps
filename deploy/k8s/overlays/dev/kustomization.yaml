@@ -58,7 +58,7 @@ images:
     newTag: "37626e4"
   - name: REPLACE_ME/shopcloud/admin-web
     newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/frontend
-    newTag: admin-web-76910dd-fix
+    newTag: admin-web-39283c8-limitfix
   - name: REPLACE_ME/shopcloud/catalog
     newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/catalog
     newTag: 3d340bd
