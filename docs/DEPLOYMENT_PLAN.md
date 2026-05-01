@@ -93,6 +93,7 @@ No AWS provisioning should happen without explicit approval for the current stag
   - Client VPN until public app and data layer are stable
   - MFA polish until Cognito basics work
 - Approval checkpoint: approve certificate plan, VPN cost, and internal DNS approach
+- Current status: Cognito pools are prepared as Stage 6a. Client VPN still requires ACM server/client certificate planning before creation.
 
 ## Stage 7: CloudFront, WAF, and Route 53
 - Create:

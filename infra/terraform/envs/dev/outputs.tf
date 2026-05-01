@@ -38,3 +38,19 @@ output "monitoring_dashboard_name" {
 output "cloudfront_domain_name" {
   value = module.edge.distribution_domain_name
 }
+
+output "cognito_customer_user_pool_id" {
+  value = module.cognito.customer_user_pool_id
+}
+
+output "cognito_customer_user_pool_client_id" {
+  value = module.cognito.customer_user_pool_client_id
+}
+
+output "cognito_admin_user_pool_id" {
+  value = module.cognito.admin_user_pool_id
+}
+
+output "cognito_admin_user_pool_client_id" {
+  value = module.cognito.admin_user_pool_client_id
+}

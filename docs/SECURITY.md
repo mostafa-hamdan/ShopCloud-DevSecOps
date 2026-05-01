@@ -26,6 +26,13 @@
 - Keep image scan support ready in CI
 
 ## Deferred but planned
-- WAF once the public app path is stable
+- Client VPN creation after ACM certificate material is ready
 - Trivy in CI if the baseline pipelines are stable
 - NetworkPolicy only if it does not add avoidable risk late in the deadline
+
+## Current cloud status
+- CloudFront and AWS WAF protect the public customer path.
+- Checkout uses IRSA to publish invoice events to SQS.
+- RDS and Redis are private.
+- S3 invoice bucket blocks public access.
+- Cognito customer/admin pools are provisioned for final architecture evidence; the live demo app remains on local JWT mode for stability.
