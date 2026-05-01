@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/auth-context";
 import { formatMoney } from "@/lib/money";
 
 export default function CartPage() {
-  const { token, isReady } = useAuth();
+  const { token, isReady, authMode } = useAuth();
   const router = useRouter();
   const [cart, setCart] = useState<Cart | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -19,15 +19,21 @@ export default function CartPage() {
   const load = useCallback(async () => {
     if (!token) return;
     try {
-      const [c, a] = await Promise.all([cartApi.get(token), addrApi.list(token)]);
+      const c = await cartApi.get(token);
       setCart(c);
-      setAddresses(a);
-      const def = a.find((x) => x.is_default);
-      if (def) setSelectedAddrId(def.id);
+      if (authMode === "local") {
+        const a = await addrApi.list(token);
+        setAddresses(a);
+        const def = a.find((x) => x.is_default);
+        if (def) setSelectedAddrId(def.id);
+      } else {
+        setAddresses([]);
+        setSelectedAddrId(undefined);
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load cart");
     }
-  }, [token]);
+  }, [token, authMode]);
 
   useEffect(() => {
     if (!isReady) return;

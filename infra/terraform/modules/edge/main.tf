@@ -65,6 +65,7 @@ resource "aws_cloudfront_distribution" "this" {
       cookies {
         forward = "all"
       }
+      headers = ["Authorization"]
     }
   }
 

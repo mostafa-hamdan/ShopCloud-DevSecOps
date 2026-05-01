@@ -6,7 +6,7 @@ import { Address, AddressInput, addresses as addrApi, auth as authApi, Profile }
 import { useAuth } from "@/lib/auth-context";
 
 export default function AccountPage() {
-  const { token, isReady } = useAuth();
+  const { token, email, userId, isReady, authMode } = useAuth();
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -15,6 +15,12 @@ export default function AccountPage() {
 
   const load = useCallback(async () => {
     if (!token) return;
+    if (authMode === "cognito") {
+      setProfile({ user_id: userId || "", email: email || "", full_name: "" });
+      setAddresses([]);
+      setError(null);
+      return;
+    }
     try {
       const [p, a] = await Promise.all([authApi.me(token), addrApi.list(token)]);
       setProfile(p);
@@ -22,7 +28,7 @@ export default function AccountPage() {
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed");
     }
-  }, [token]);
+  }, [token, authMode, email, userId]);
 
   useEffect(() => {
     if (!isReady) return;
@@ -36,8 +42,33 @@ export default function AccountPage() {
 
   return (
     <div className="space-y-10">
-      <ProfileSection profile={profile} token={token} onUpdated={load} />
+      {authMode === "cognito" ? (
+        <section>
+          <h2 className="text-xl font-semibold mb-3">Profile</h2>
+          <div className="bg-white border border-black/10 rounded p-4 space-y-3">
+            <div>
+              <p className="text-sm text-black/60">Email</p>
+              <p>{profile.email}</p>
+            </div>
+            <div>
+              <p className="text-sm text-black/60">User ID</p>
+              <p className="break-all text-sm">{profile.user_id}</p>
+            </div>
+          </div>
+        </section>
+      ) : (
+        <ProfileSection profile={profile} token={token} onUpdated={load} />
+      )}
 
+      {authMode === "cognito" ? (
+        <section className="bg-white border border-black/10 rounded p-4">
+          <h2 className="text-xl font-semibold mb-2">Cognito account</h2>
+          <p className="text-sm text-black/60">
+            This customer account is authenticated by Amazon Cognito. Profile and password
+            management stay in Cognito for this demo.
+          </p>
+        </section>
+      ) : (
       <section>
         <div className="flex justify-between items-center mb-3">
           <h2 className="text-xl font-semibold">Addresses</h2>
@@ -94,6 +125,7 @@ export default function AccountPage() {
           )}
         </div>
       </section>
+      )}
     </div>
   );
 }

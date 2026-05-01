@@ -17,7 +17,7 @@ import { exchangeCustomerCode } from "@/lib/cognito";
 function Callback() {
   const params = useSearchParams();
   const router = useRouter();
-  const { applyCognitoTokens } = useAuth();
+  const { applyCognitoTokens, token } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const handledRef = useRef(false);
 
@@ -43,9 +43,13 @@ function Callback() {
         router.replace("/");
       })
       .catch((e: unknown) => {
+        if (token && e instanceof Error && e.message.includes("Missing PKCE verifier")) {
+          router.replace("/");
+          return;
+        }
         setError(e instanceof Error ? e.message : "Token exchange failed");
       });
-  }, [params, router, applyCognitoTokens]);
+  }, [params, router, applyCognitoTokens, token]);
 
   if (error) {
     return (
