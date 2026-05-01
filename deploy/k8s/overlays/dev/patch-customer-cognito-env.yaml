@@ -18,4 +18,4 @@ spec:
             - name: NEXT_PUBLIC_COGNITO_CUSTOMER_CLIENT_ID
               value: "s6uarb38gsig7gvdpd23v9e5t"
             - name: NEXT_PUBLIC_COGNITO_CUSTOMER_REDIRECT_URI
-              value: "https://www.shopcloud312.com/auth/callback"
+              value: "https://www.shopcloud312.com/cognito/callback"

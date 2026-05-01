@@ -26,8 +26,8 @@ Use the customer user pool app client.
 - User pool ID: `us-east-1_ML4GVS8pk`
 - App client ID: `s6uarb38gsig7gvdpd23v9e5t`
 - Callback URLs:
-  - `https://www.shopcloud312.com/auth/callback`
-  - `https://dia46ciw5njau.cloudfront.net/auth/callback`
+  - `https://www.shopcloud312.com/cognito/callback`
+  - `https://dia46ciw5njau.cloudfront.net/cognito/callback`
 - Sign-out URLs:
   - `https://www.shopcloud312.com`
   - `https://dia46ciw5njau.cloudfront.net`
@@ -88,7 +88,7 @@ NEXT_PUBLIC_AUTH_MODE: "cognito"
 NEXT_PUBLIC_COGNITO_REGION: "us-east-1"
 NEXT_PUBLIC_COGNITO_CUSTOMER_DOMAIN: "shopcloud-dev-customers"
 NEXT_PUBLIC_COGNITO_CUSTOMER_CLIENT_ID: "s6uarb38gsig7gvdpd23v9e5t"
-NEXT_PUBLIC_COGNITO_CUSTOMER_REDIRECT_URI: "https://www.shopcloud312.com/auth/callback"
+NEXT_PUBLIC_COGNITO_CUSTOMER_REDIRECT_URI: "https://www.shopcloud312.com/cognito/callback"
 ```
 
 For customer-facing backend JWT verification, set:
