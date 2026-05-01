@@ -15,14 +15,17 @@ export default function ProductsPage() {
   const load = useCallback(async () => {
     if (!token) return;
     try {
-      const r = await productsApi.list(token, q || undefined);
-      setItems(r.items);
+      const response = await productsApi.list(token, q || undefined);
+      setItems(response.items);
+      setError(null);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load");
     }
   }, [token, q]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   async function remove(id: string) {
     if (!token) return;
@@ -30,6 +33,7 @@ export default function ProductsPage() {
     try {
       await productsApi.remove(token, id);
       setItems((xs) => xs.filter((x) => x.id !== id));
+      setError(null);
     } catch (e: unknown) {
       alert(e instanceof Error ? e.message : "Failed");
     }
@@ -50,7 +54,7 @@ export default function ProductsPage() {
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Search by name or SKU…"
+        placeholder="Search by name or SKU..."
         className="w-full mb-4 px-3 py-2 border border-black/15 rounded bg-white focus:outline-none focus:border-accent"
       />
 
@@ -73,14 +77,22 @@ export default function ProductsPage() {
               <tr key={p.id} className="border-t border-black/5">
                 <td className="px-4 py-2 font-mono text-xs">{p.sku}</td>
                 <td className="px-4 py-2">
-                  <Link href={`/products/${p.id}`} className="hover:text-accent">{p.name}</Link>
+                  <Link href={`/products/${p.id}`} className="hover:text-accent">
+                    {p.name}
+                  </Link>
                 </td>
-                <td className="px-4 py-2 text-black/60">{p.category?.name ?? "—"}</td>
+                <td className="px-4 py-2 text-black/60">{p.category?.name ?? "-"}</td>
                 <td className="px-4 py-2 text-right">{formatMoney(p.price_cents, p.currency)}</td>
                 <td className={`px-4 py-2 text-right ${p.stock === 0 ? "text-red-700 font-medium" : ""}`}>
                   {p.stock}
                 </td>
                 <td className="px-4 py-2 text-right">
+                  <Link
+                    href={`/products/${p.id}`}
+                    className="mr-3 text-xs text-accent hover:underline"
+                  >
+                    Edit
+                  </Link>
                   <button
                     onClick={() => remove(p.id)}
                     className="text-xs text-red-700 hover:underline"
@@ -91,7 +103,9 @@ export default function ProductsPage() {
               </tr>
             ))}
             {items.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-4 text-black/50">No products.</td></tr>
+              <tr>
+                <td colSpan={6} className="px-4 py-4 text-black/50">No products.</td>
+              </tr>
             )}
           </tbody>
         </table>

@@ -22,13 +22,18 @@ export default function EditProductPage() {
       productsApi.get(token, params.id),
       catApi.list(token),
     ])
-      .then(([p, cs]) => { setProduct(p); setCategories(cs); })
-      .catch((e) => setError(e.message));
+      .then(([p, cs]) => {
+        setProduct(p);
+        setCategories(cs);
+        setError(null);
+      })
+      .catch((e: unknown) => {
+        setError(e instanceof Error ? e.message : "Failed to load product");
+      });
   }, [token, params?.id]);
 
   async function submit(v: ProductFormValues) {
     if (!token || !product) return;
-    // SKU is locked on edit; only send fields the API supports patching.
     await productsApi.update(token, product.id, {
       name: v.name,
       description: v.description,
@@ -41,7 +46,7 @@ export default function EditProductPage() {
   }
 
   if (error) return <p className="text-red-700">{error}</p>;
-  if (!product) return <p className="text-black/60">Loading…</p>;
+  if (!product) return <p className="text-black/60">Loading...</p>;
 
   return (
     <div>

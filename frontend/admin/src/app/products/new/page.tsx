@@ -14,7 +14,7 @@ export default function NewProductPage() {
 
   useEffect(() => {
     if (!token) return;
-    catApi.list(token).then(setCategories).catch(() => { /* ok */ });
+    catApi.list(token).then(setCategories).catch(() => {});
   }, [token]);
 
   async function submit(v: ProductFormValues) {

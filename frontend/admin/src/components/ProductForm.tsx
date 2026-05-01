@@ -47,7 +47,9 @@ export default function ProductForm({
     setError(null);
     try {
       await onSubmit({
-        sku, name, description,
+        sku,
+        name,
+        description,
         price_cents: parseMoneyToCents(priceText),
         currency,
         image_url: imageUrl,
@@ -67,16 +69,20 @@ export default function ProductForm({
         <div>
           <label className="block text-sm mb-1">SKU</label>
           <input
-            value={sku} onChange={(e) => setSku(e.target.value)}
-            disabled={lockSku} required
+            value={sku}
+            onChange={(e) => setSku(e.target.value)}
+            disabled={lockSku}
+            required
             className="w-full px-3 py-2 border border-black/15 rounded bg-white disabled:bg-black/5"
           />
         </div>
         <div>
           <label className="block text-sm mb-1">Currency</label>
           <input
-            value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())}
-            maxLength={3} required
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value.toUpperCase())}
+            maxLength={3}
+            required
             className="w-full px-3 py-2 border border-black/15 rounded bg-white"
           />
         </div>
@@ -84,14 +90,17 @@ export default function ProductForm({
       <div>
         <label className="block text-sm mb-1">Name</label>
         <input
-          value={name} onChange={(e) => setName(e.target.value)} required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
           className="w-full px-3 py-2 border border-black/15 rounded bg-white"
         />
       </div>
       <div>
         <label className="block text-sm mb-1">Description</label>
         <textarea
-          value={description} onChange={(e) => setDescription(e.target.value)}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           rows={3}
           className="w-full px-3 py-2 border border-black/15 rounded bg-white"
         />
@@ -100,17 +109,20 @@ export default function ProductForm({
         <div>
           <label className="block text-sm mb-1">Price</label>
           <input
-            value={priceText} onChange={(e) => setPriceText(e.target.value)}
-            placeholder="0.00" required
+            value={priceText}
+            onChange={(e) => setPriceText(e.target.value)}
+            placeholder="0.00"
+            required
             className="w-full px-3 py-2 border border-black/15 rounded bg-white"
           />
         </div>
         <div>
           <label className="block text-sm mb-1">Stock</label>
           <input
-            type="number" min={0}
+            type="number"
+            min={0}
             value={stock}
-            onChange={(e) => setStock(parseInt(e.target.value) || 0)}
+            onChange={(e) => setStock(parseInt(e.target.value, 10) || 0)}
             className="w-full px-3 py-2 border border-black/15 rounded bg-white"
           />
         </div>
@@ -121,7 +133,7 @@ export default function ProductForm({
             onChange={(e) => setCategorySlug(e.target.value)}
             className="w-full px-3 py-2 border border-black/15 rounded bg-white"
           >
-            <option value="">—</option>
+            <option value="">-</option>
             {categories.map((c) => (
               <option key={c.id} value={c.slug}>{c.name}</option>
             ))}
@@ -131,7 +143,8 @@ export default function ProductForm({
       <div>
         <label className="block text-sm mb-1">Image URL</label>
         <input
-          value={imageUrl} onChange={(e) => setImageUrl(e.target.value)}
+          value={imageUrl}
+          onChange={(e) => setImageUrl(e.target.value)}
           className="w-full px-3 py-2 border border-black/15 rounded bg-white"
         />
       </div>
@@ -140,7 +153,7 @@ export default function ProductForm({
         disabled={busy}
         className="px-5 py-2.5 bg-accent text-white rounded hover:bg-blue-800 disabled:bg-black/30"
       >
-        {busy ? "Saving…" : submitLabel}
+        {busy ? "Saving..." : submitLabel}
       </button>
     </form>
   );

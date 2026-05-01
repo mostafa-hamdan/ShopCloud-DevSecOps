@@ -55,8 +55,42 @@ function envUrl(name: string, fallback: string): string {
     : fallback;
 }
 
-const ADMIN = envUrl("NEXT_PUBLIC_ADMIN_URL", "");
-const AUTH = envUrl("NEXT_PUBLIC_AUTH_URL", "");
+const ADMIN = envUrl("NEXT_PUBLIC_ADMIN_URL", "/admin");
+const AUTH = envUrl("NEXT_PUBLIC_AUTH_URL", "/auth");
+
+function detailToMessage(detail: unknown): string {
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    return detail.map((item) => detailToMessage(item)).join(", ");
+  }
+  if (detail && typeof detail === "object") {
+    if ("msg" in detail && typeof detail.msg === "string") return detail.msg;
+    return JSON.stringify(detail);
+  }
+  return "Request failed";
+}
+
+function expectArray<T>(data: unknown): T[] {
+  if (Array.isArray(data)) return data as T[];
+  if (data && typeof data === "object" && "value" in data && Array.isArray((data as { value: unknown[] }).value)) {
+    return (data as { value: T[] }).value;
+  }
+  return [];
+}
+
+function expectProductList(data: unknown): ProductList {
+  if (data && typeof data === "object" && "items" in data) {
+    const items = Array.isArray((data as { items: unknown[] }).items)
+      ? ((data as { items: Product[] }).items)
+      : [];
+    const total = typeof (data as { total?: unknown }).total === "number"
+      ? ((data as { total: number }).total)
+      : items.length;
+    return { items, total };
+  }
+  const items = expectArray<Product>(data);
+  return { items, total: items.length };
+}
 
 async function request<T>(url: string, init: RequestInit = {}, token?: string | null): Promise<T> {
   const res = await fetch(url, {
@@ -72,7 +106,7 @@ async function request<T>(url: string, init: RequestInit = {}, token?: string | 
     let detail = res.statusText;
     try {
       const body = await res.json();
-      detail = body.detail || JSON.stringify(body);
+      detail = detailToMessage(body.detail ?? body);
     } catch { /* ignore */ }
     throw new Error(detail);
   }
@@ -89,67 +123,74 @@ export const adminAuth = {
 };
 
 export const products = {
-  list: (token: string, q?: string) => {
+  list: async (token: string, q?: string) => {
     const p = new URLSearchParams();
     if (q) p.set("q", q);
     p.set("limit", "200");
-    return request<ProductList>(`${ADMIN}/admin/products?${p}`, {}, token);
+    const data = await request<unknown>(`${ADMIN}/products?${p}`, {}, token);
+    return expectProductList(data);
   },
   get: (token: string, id: string) =>
-    request<Product>(`${ADMIN}/admin/products/${id}`, {}, token),
+    request<Product>(`${ADMIN}/products/${id}`, {}, token),
   create: (token: string, payload: Partial<Product> & { sku: string; name: string; price_cents: number; category_slug?: string }) =>
-    request<Product>(`${ADMIN}/admin/products`, {
+    request<Product>(`${ADMIN}/products`, {
       method: "POST",
       body: JSON.stringify(payload),
     }, token),
   update: (token: string, id: string, patch: Record<string, unknown>) =>
-    request<Product>(`${ADMIN}/admin/products/${id}`, {
+    request<Product>(`${ADMIN}/products/${id}`, {
       method: "PATCH",
       body: JSON.stringify(patch),
     }, token),
   remove: (token: string, id: string) =>
-    request<void>(`${ADMIN}/admin/products/${id}`, { method: "DELETE" }, token),
+    request<void>(`${ADMIN}/products/${id}`, { method: "DELETE" }, token),
 };
 
 export const categories = {
-  list: (token: string) =>
-    request<Category[]>(`${ADMIN}/admin/categories`, {}, token),
+  list: async (token: string) => {
+    const data = await request<unknown>(`${ADMIN}/categories`, {}, token);
+    return expectArray<Category>(data);
+  },
 };
 
 export const orders = {
-  list: (token: string, q?: string, status?: string) => {
+  list: async (token: string, q?: string, status?: string) => {
     const p = new URLSearchParams();
     if (q) p.set("q", q);
     if (status) p.set("status", status);
-    return request<Order[]>(`${ADMIN}/admin/orders?${p}`, {}, token);
+    const data = await request<unknown>(`${ADMIN}/orders?${p}`, {}, token);
+    return expectArray<Order>(data);
   },
   refund: (token: string, id: string) =>
-    request<Order>(`${ADMIN}/admin/orders/${id}/refund`, {
+    request<Order>(`${ADMIN}/orders/${id}/refund`, {
       method: "POST",
     }, token),
 };
 
 export const returns = {
-  list: (token: string, status?: string) => {
+  list: async (token: string, status?: string) => {
     const p = new URLSearchParams();
     if (status) p.set("status", status);
-    return request<ReturnRequestEntry[]>(`${ADMIN}/admin/returns?${p}`, {}, token);
+    const data = await request<unknown>(`${ADMIN}/returns?${p}`, {}, token);
+    return expectArray<ReturnRequestEntry>(data);
   },
   approve: (token: string, id: string) =>
-    request<ReturnRecord>(`${ADMIN}/admin/returns/${id}/approve`, {
+    request<ReturnRecord>(`${ADMIN}/returns/${id}/approve`, {
       method: "POST",
     }, token),
   reject: (token: string, id: string) =>
-    request<ReturnRecord>(`${ADMIN}/admin/returns/${id}/reject`, {
+    request<ReturnRecord>(`${ADMIN}/returns/${id}/reject`, {
       method: "POST",
     }, token),
 };
 
 export const customers = {
-  list: (token: string, q?: string) => {
+  list: async (token: string, q?: string) => {
     const p = new URLSearchParams();
     if (q) p.set("q", q);
     p.set("limit", "100");
-    return request<CustomerList>(`${ADMIN}/admin/customers?${p}`, {}, token);
+    const data = await request<unknown>(`${ADMIN}/customers?${p}`, {}, token);
+    const items = expectArray<Customer>(data);
+    return { items, total: items.length };
   },
 };

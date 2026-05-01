@@ -18,8 +18,11 @@ export default function Dashboard() {
       .then(([os, ps]) => {
         setRecentOrders(os.slice(0, 8));
         setLowStock(ps.items.filter((p) => p.stock <= 5).slice(0, 8));
+        setError(null);
       })
-      .catch((e) => setError(e.message));
+      .catch((e: unknown) => {
+        setError(e instanceof Error ? e.message : "Failed to load dashboard");
+      });
   }, [token]);
 
   const totalRevenue = recentOrders
