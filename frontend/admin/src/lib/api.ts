@@ -55,8 +55,8 @@ function envUrl(name: string, fallback: string): string {
     : fallback;
 }
 
-const ADMIN = envUrl("NEXT_PUBLIC_ADMIN_URL", "http://localhost:8005");
-const AUTH = envUrl("NEXT_PUBLIC_AUTH_URL", "http://localhost:8004");
+const ADMIN = envUrl("NEXT_PUBLIC_ADMIN_URL", "");
+const AUTH = envUrl("NEXT_PUBLIC_AUTH_URL", "");
 
 async function request<T>(url: string, init: RequestInit = {}, token?: string | null): Promise<T> {
   const res = await fetch(url, {

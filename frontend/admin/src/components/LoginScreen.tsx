@@ -56,7 +56,7 @@ export default function LoginScreen() {
             disabled={busy}
             className="w-full px-4 py-2.5 bg-accent text-white rounded hover:bg-blue-800 disabled:bg-black/30"
           >
-            {busy ? "Signing in…" : "Sign in"}
+            {busy ? "Signing in..." : "Sign in"}
           </button>
         </form>
         <p className="mt-4 text-xs text-black/50">

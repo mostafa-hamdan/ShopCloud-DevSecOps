@@ -52,21 +52,13 @@ patches:
       kind: Ingress
       name: internal-admin
     path: delete-internal-admin-ingress.yaml
-  - target:
-      group: apps
-      version: v1
-      kind: Deployment
-      name: admin-web
-    path: delete-admin-web-deployment.yaml
-  - target:
-      version: v1
-      kind: Service
-      name: admin-web
-    path: delete-admin-web-service.yaml
 images:
   - name: REPLACE_ME/shopcloud/customer-web
     newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/frontend
     newTag: "37626e4"
+  - name: REPLACE_ME/shopcloud/admin-web
+    newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/frontend
+    newTag: admin-web-latest
   - name: REPLACE_ME/shopcloud/catalog
     newName: 338078971311.dkr.ecr.us-east-1.amazonaws.com/shopcloud/dev/catalog
     newTag: 3d340bd
@@ -84,6 +76,8 @@ images:
     newTag: dev-latest
 replicas:
   - name: customer-web
+    count: 1
+  - name: admin-web
     count: 1
   - name: catalog
     count: 1
